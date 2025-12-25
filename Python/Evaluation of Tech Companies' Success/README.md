@@ -118,5 +118,5 @@ Evaluation of Tech Companies' Success/
 ├─ data/          # raw and cleaned datasets
 ├─ src/           # Python analysis scripts
 ├─ slides/        # presentation slides (PDF)
-├─ results/       # figures and outputs
+├─ result/        # figures and outputs
 └─ README.md
