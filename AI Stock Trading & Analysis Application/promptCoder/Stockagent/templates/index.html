@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulation Configuration</title>
+    <style>
+        /* 全局样式 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F7F9FC; /* 淡蓝色背景 */
+            min-height: 100vh;
+            padding: 40px;
+            color: #1E293B;
+        }
+
+        /* 玻璃卡片容器 */
+        .container {
+            max-width: 900px; /* 稍微加宽以容纳长表单 */
+            margin: auto;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px 40px; /* 增加内边距 */
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #1E293B;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        /* 表单区域标题 */
+        .section-title {
+            margin-top: 25px;
+            margin-bottom: 20px;
+            font-size: 1.5rem; /* 增大字体 */
+            color: #334155;
+            border-bottom: 2px solid #0066CC; /* 蓝色下划线 */
+            padding-bottom: 10px;
+        }
+
+        /* 表单输入组 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="number"],
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: #F8FAFC;
+            color: #1E293B;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group input[type="text"]:focus,
+        .form-group input[type="number"]:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #0066CC;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        textarea { resize: vertical; }
+
+        /* 提交按钮 */
+        input[type="submit"] {
+            width: 100%;
+            padding: 14px;
+            background: #0066CC; /* 统一的蓝色 */
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem; /* 增大字体 */
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 25px;
+        }
+        input[type="submit"]:hover {
+            background: #004499; /* 悬停颜色 */
+            transform: translateY(-2px); /* 悬浮效果 */
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+        }
+        
+        /* 备注小字 */
+        .list-input-note {
+            font-size: 0.9em;
+            color: #475569;
+            margin-top: 6px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Configure Simulation Parameters</h1>
+    <form action="{{ url_for('run_simulation_route') }}" method="post">
+
+        <div class="section-title">API Configuration</div>
+        <div class="form-group">
+            <label for="gemini_api_key">Gemini API Key:</label>
+            <input type="text" id="gemini_api_key" name="gemini_api_key" value="AIzaSyD3zzqEwu_ktToqNFdKLQoJ9jyBegXZwsQ">
+            <small class="list-input-note">Caution: Avoid exposing sensitive keys in client-side code in production.</small>
+        </div>
+        <div class="form-group">
+            <label for="model_name">Model Name (for Agent & Secretary):</label>
+            <input type="text" id="model_name" name="model_name" value="gemini-2.5-flash-lite">
+        </div>
+
+        <div class="section-title">Basic Settings</div>
+        <div class="form-group">
+            <label for="agents_num">Number of Agents:</label>
+            <input type="number" id="agents_num" name="agents_num" value="2" min="1">
+        </div>
+        <div class="form-group">
+            <label for="total_date">Total Simulation Days:</label>
+            <input type="number" id="total_date" name="total_date" value="3" min="1">
+        </div>
+        <div class="form-group">
+            <label for="total_session">Daily Trading Sessions:</label>
+            <input type="number" id="total_session" name="total_session" value="3" min="1">
+        </div>
+
+        <div class="section-title">Stock Initial Settings</div>
+        <div class="form-group">
+            <label for="stock_a_initial_price">Stock A Initial Price:</label>
+            <input type="number" step="0.01" id="stock_a_initial_price" name="stock_a_initial_price" value="30" min="0.01">
+        </div>
+        <div class="form-group">
+            <label for="stock_b_initial_price">Stock B Initial Price:</label>
+            <input type="number" step="0.01" id="stock_b_initial_price" name="stock_b_initial_price" value="40" min="0.01">
+        </div>
+
+        <div class="section-title">Agent Initial Property</div>
+        <div class="form-group">
+            <label for="max_initial_property">Max Initial Property:</label>
+            <input type="number" step="0.01" id="max_initial_property" name="max_initial_property" value="5000000.0" min="0">
+        </div>
+        <div class="form-group">
+            <label for="min_initial_property">Min Initial Property:</label>
+            <input type="number" step="0.01" id="min_initial_property" name="min_initial_property" value="100000.0" min="0">
+        </div>
+
+        <div class="section-title">Loan Settings</div>
+        <div class="form-group">
+            <label for="loan_type_names">Loan Types (comma-separated names, e.g., one-month,two-month):</label>
+            <input type="text" id="loan_type_names" name="loan_type_names" value="one-month,two-month,three-month">
+        </div>
+        <div class="form-group">
+            <label for="loan_type_durations">Loan Durations (comma-separated days, corresponding to types):</label>
+            <input type="text" id="loan_type_durations" name="loan_type_durations" value="22,44,66">
+            <small class="list-input-note">Must match the number of loan types. Enter positive integers.</small>
+        </div>
+        <div class="form-group">
+            <label for="loan_rates">Loan Rates (comma-separated, e.g., 0.027,0.03,0.033):</label>
+            <input type="text" id="loan_rates" name="loan_rates" value="0.027,0.03,0.033">
+            <small class="list-input-note">Must match the number of loan types. Enter positive decimals.</small>
+        </div>
+        <div class="form-group">
+            <label for="repayment_days">Repayment Days (comma-separated list of day numbers):</label>
+            <input type="text" id="repayment_days" name="repayment_days" value="22,44,66,88,110,132,154,176,198,220,242,264">
+        </div>
+
+        <div class="section-title">Financial Reports</div>
+        <div class="form-group">
+            <label for="seasonal_days">Seasonal Days (length of a quarter):</label>
+            <input type="number" id="seasonal_days" name="seasonal_days" value="66" min="1">
+        </div>
+        <div class="form-group">
+            <label for="season_report_days">Season Report Days (comma-separated list of day numbers, typically 4 values):</label>
+            <input type="text" id="season_report_days" name="season_report_days" value="12,78,144,210">
+        </div>
+        
+        <div class="form-group">
+            <label for="financial_report_a_q1">Financial Report A - Q1:</label>
+            <textarea id="financial_report_a_q1" name="financial_report_a_q1" rows="4">Last quarter's financial report of Company A. Revenue growth rate (YoY): 9.49%, Revenue million: 4483.99, Gross margin: 41.05%, Income Tax as a percentage of Revenue: 11.31%, Selling Expense Rate:6.83%, Management Expense Rate: 3.83%, Net profit million: 856.6705, Depreciation and Amortization: 0.91%, Capital Expenditures: 2.30%, Changes in working capital: 0.82%, Cash Flow(million): 756.7537</textarea>
+        </div>
+         <div class="form-group">
+            <label for="financial_report_a_q2">Financial Report A - Q2:</label>
+            <textarea id="financial_report_a_q2" name="financial_report_a_q2" rows="4">Last quarter's financial report of Company A. Revenue growth rate (YoY): 7.38%, Revenue million: 4417.79, Gross margin: 35.68%, Income Tax as a percentage of Revenue: 11.75%, Selling Expense Rate:8.13%, Management Expense Rate: 4.62%, Net profit million: 493.9451, Depreciation and Amortization: 1.34%, Capital Expenditures: 2.68%, Changes in working capital: 0.86%, Cash Flow(million): 396.5329</textarea>
+        </div>
+        <div class="form-group">
+            <label for="financial_report_a_q3">Financial Report A - Q3:</label>
+            <textarea id="financial_report_a_q3" name="financial_report_a_q3" rows="4">Last quarter's financial report of Company A. Revenue growth rate (YoY): 8.70%, Revenue million: 4041.30, Gross margin: 37.45%, Income Tax as a percentage of Revenue: 9.34%, Selling Expense Rate:6.79%, Management Expense Rate: 3.41%, Net profit million: 724.3648, Depreciation and Amortization: 1.27%, Capital Expenditures: 2.44%, Changes in working capital: 0.94%, Cash Flow(million): 639.5329</textarea>
+        </div>
+        <div class="form-group">
+            <label for="financial_report_a_q4">Financial Report A - Q4:</label>
+            <textarea id="financial_report_a_q4" name="financial_report_a_q4" rows="4">Last quarter's financial report of Company A. Revenue growth rate (YoY): 7.75%, Revenue million: 5024.04, Gross margin: 42.47%, Income Tax as a percentage of Revenue: 10.67%, Selling Expense Rate:6.56%, Management Expense Rate: 4.72%, Net profit million: 1031.214, Depreciation and Amortization: 1.08%, Capital Expenditures: 2.71%, Changes in working capital: 0.08%, Cash Flow(million): 945.5034</textarea>
+        </div>
+
+        <div class="form-group">
+            <label for="financial_report_b_q1">Financial Report B - Q1:</label>
+            <textarea id="financial_report_b_q1" name="financial_report_b_q1" rows="4">Last quarter's financial report of Company B. Revenue growth rate (YoY): 19.96%, Revenue million: 1319.94, Gross margin: 31.21%, Income Tax as a percentage of Revenue: 0.70%, Selling Expense Rate:4.69%, Management Expense Rate: 8.78%, Net profit million: 224.9179, Depreciation and Amortization: 1.13%, Capital Expenditures: 1.77%, Changes in working capital: 0.59%, Cash Flow(million): 208.7266</textarea>
+        </div>
+         <div class="form-group">
+            <label for="financial_report_b_q2">Financial Report B - Q2:</label>
+            <textarea id="financial_report_b_q2" name="financial_report_b_q2" rows="4">Last quarter's financial report of Company B. Revenue growth rate (YoY): 19.86%, Revenue million: 1096.70, Gross margin: 31.26%, Income Tax as a percentage of Revenue: 0.71%, Selling Expense Rate:3.62%, Management Expense Rate: 9.90%, Net profit million: 186.7678, Depreciation and Amortization: 0.67%, Capital Expenditures: 1.44%, Changes in working capital: -0.31%, Cash Flow(million): 181.6862</textarea>
+        </div>
+        <div class="form-group">
+            <label for="financial_report_b_q3">Financial Report B - Q3:</label>
+            <textarea id="financial_report_b_q3" name="financial_report_b_q3" rows="4">Last quarter's financial report of Company B. Revenue growth rate (YoY): 18.21%, Revenue million: 1676.70, Gross margin: 31.58%, Income Tax as a percentage of Revenue: 0.92%, Selling Expense Rate:3.78%, Management Expense Rate: 10.27%, Net profit million: 278.3327, Depreciation and Amortization: 0.77%, Capital Expenditures: 1.56%, Changes in working capital: -0.06%, Cash Flow(million): 266.1486</textarea>
+        </div>
+        <div class="form-group">
+            <label for="financial_report_b_q4">Financial Report B - Q4:</label>
+            <textarea id="financial_report_b_q4" name="financial_report_b_q4" rows="4">Last quarter's financial report of Company B. Revenue growth rate (YoY): 15.98%, Revenue million: 1075.13, Gross margin: 32.41%, Income Tax as a percentage of Revenue: 1.08%, Selling Expense Rate:3.79%, Management Expense Rate: 10.70%, Net profit million: 181.1602, Depreciation and Amortization: 1.09%, Capital Expenditures: 2.28%, Changes in working capital: 0.67%, Cash Flow(million): 161.1985</textarea>
+        </div>
+
+        <div class="section-title">Special Events</div>
+        <div class="form-group">
+            <label for="event_1_day">Event 1 Day:</label>
+            <input type="number" id="event_1_day" name="event_1_day" value="78" min="0">
+        </div>
+        <div class="form-group">
+            <label for="event_1_message">Event 1 Message:</label>
+            <textarea id="event_1_message" name="event_1_message" rows="3">The government has announced a reduction in the reserve requirement ratio. The lending interest rates have been lowered.</textarea>
+        </div>
+        <div class="form-group">
+            <label for="event_1_loan_rate">Event 1 Loan Rates (comma-separated):</label>
+            <input type="text" id="event_1_loan_rate" name="event_1_loan_rate" value="0.024,0.027,0.030">
+             <small class="list-input-note">Must match the number of loan types. Enter positive decimals.</small>
+        </div>
+
+        <div class="form-group">
+            <label for="event_2_day">Event 2 Day:</label>
+            <input type="number" id="event_2_day" name="event_2_day" value="144" min="0">
+        </div>
+        <div class="form-group">
+            <label for="event_2_message">Event 2 Message:</label>
+            <textarea id="event_2_message" name="event_2_message" rows="3">The government has announced an increase in interest rates.</textarea>
+        </div>
+        <div class="form-group">
+            <label for="event_2_loan_rate">Event 2 Loan Rates (comma-separated):</label>
+            <input type="text" id="event_2_loan_rate" name="event_2_loan_rate" value="0.0255,0.0285,0.0315">
+            <small class="list-input-note">Must match the number of loan types. Enter positive decimals.</small>
+        </div>
+
+        <input type="submit" value="Run Simulation">
+    </form>
+</div>
+</body>
+</html>

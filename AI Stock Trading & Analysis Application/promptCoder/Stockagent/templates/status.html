@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulation Status & Live Feed</title>
+    <style>
+        /* 全局样式 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F7F9FC; /* 淡蓝色背景 */
+            min-height: 100vh;
+            padding: 20px;
+            color: #1E293B;
+            /* 注意：这个页面没有导航栏，所以不需要顶部内边距 */
+        }
+        
+        h1, h2, h3, h4, h5 { color: #1E293B; }
+        h1 { font-size: 2rem; margin-bottom: 20px; text-align: center; }
+        h2 { font-size: 1.5rem; margin-bottom: 15px; }
+
+        /* 玻璃卡片样式 */
+        .card-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        /* 主布局 */
+        .container {
+            max-width: 1400px; /* 适配更宽的屏幕 */
+            margin: auto;
+        }
+
+        .flex-container {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+        }
+
+        .main-results {
+            flex: 2;
+            min-width: 600px;
+            box-sizing: border-box;
+        }
+
+        .live-feed {
+            flex: 1;
+            min-width: 300px;
+            height: 75vh; /* 设置固定高度 */
+            display: flex;
+            flex-direction: column; /* 允许内部滚动 */
+        }
+
+        #live-event-feed-content {
+            flex-grow: 1; /* 占据剩余空间 */
+            overflow-y: auto; /* 允许滚动 */
+            padding: 15px;
+            background-color: #F8FAFC;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+        }
+
+        #results-output {
+            overflow-x: auto;
+        }
+
+        /* 状态和进度条 */
+        #status-message {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #progress-bar-container {
+            width: 100%;
+            background-color: #E2E8F0;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            display: none;
+            overflow: hidden; /* 确保子元素圆角 */
+        }
+        #progress-bar {
+            width: 0%;
+            height: 24px;
+            background-color: #0066CC; /* 统一的蓝色 */
+            border-radius: 8px;
+            text-align: center;
+            line-height: 24px;
+            color: white;
+            font-weight: 600;
+            transition: width 0.3s ease-in-out;
+        }
+
+        /* 统一的表格样式 */
+        #actions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            table-layout: auto;
+        }
+        #actions-table th,
+        #actions-table td {
+            border-bottom: 1px solid #E2E8F0;
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+        }
+        #actions-table th {
+            background-color: #F8FAFC; /* 浅灰色表头 */
+            color: #334155;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        #actions-table tr:nth-child(even) {
+            background-color: transparent; /* 移除斑马线 */
+        }
+        #actions-table tr:hover {
+            background-color: #F8FAFC; /* 悬停高亮 */
+        }
+
+        /* 状态颜色 */
+        .error { color: #E11D48; }
+        .completed { color: #10B981; }
+        .running { color: #0066CC; }
+
+        /* 状态消息框样式 */
+        #status-message.error { background-color: #FEE2E2; border: 1px solid #FECACA; }
+        #status-message.completed { background-color: #D1FAE5; border: 1px solid #A7F3D0; }
+        #status-message.running { background-color: #EFF6FF; border: 1px solid #DBEAFE; }
+
+        /* 主错误消息（如果模拟失败） */
+        #mainErrorMessage {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 500;
+            background: #FEE2E2;
+            color: #B91C1C;
+            border: 1px solid #FECACA;
+            white-space: pre-wrap; /* 允许换行 */
+        }
+
+        /* 返回按钮 */
+        .home-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            padding: 12px 20px;
+            background-color: #0066CC;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            width: fit-content;
+            margin-left: auto;
+            margin-right: auto;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .home-link:hover {
+            background-color: #004499;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+        }
+        
+        /* Live Feed 样式 */
+        .feed-item {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dotted #CBD5E1;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .feed-item:last-child {
+            border-bottom: none;
+        }
+        .feed-item strong { color: #0066CC; } /* 蓝色标题 */
+        
+        .feed-item-post {
+            background-color: #FFFFFF;
+            border-left: 3px solid #64748B;
+            padding: 10px;
+            margin-top: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            border-radius: 0 4px 4px 0;
+        }
+        .feed-prediction { color: #4C51BF; font-weight: 600; } /* 紫色 */
+        .feed-loan { color: #F59E0B; font-weight: 600; } /* 琥珀色 */
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Simulation Status & Live Feed</h1>
+        
+        <div id="status-message" class="running">Initializing...</div>
+        
+        <div id="progress-bar-container">
+            <div id="progress-bar">0%</div>
+        </div>
+
+        <div class="flex-container">
+            <div class="main-results card-panel">
+                <div id="results-output">
+                     <h2>Today's Actions & Executions</h2>
+                     <table id="actions-table">
+                         <thead>
+                             <tr>
+                                 <th>Day</th>
+                                 <th>Sess</th>
+                                 <th>Agent</th>
+                                 <th>Type</th> <th>Action</th> <th>Stock</th>
+                                 <th>Qty</th>
+                                 <th>Price</th>
+                                 <th>Detail / Counterparty</th>
+                             </tr>
+                         </thead>
+                         <tbody>
+                             </tbody>
+                     </table>
+                </div>
+            </div>
+            
+            <div class="live-feed card-panel">
+                <h2>Live Event Feed</h2>
+                <div id="live-event-feed-content">
+                    </div>
+            </div>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="home-link">Back to Configuration</a>
+    </div>
+
+    <script>
+        // --- 您的 JavaScript 逻辑完全不变 ---
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // --- Selectors ---
+            const statusDiv = document.getElementById('status-message');
+            const actionsOutputDiv = document.getElementById('results-output');
+            const feedDiv = document.getElementById('live-event-feed-content');
+            const progressBarContainer = document.getElementById('progress-bar-container');
+            const progressBar = document.getElementById('progress-bar');
+            let actionsTableBody = null;
+            let totalDays = 1;
+            const MAX_FEED_ITEMS = 150;
+
+            // --- Helper Functions ---
+            function formatNumber(value, decimals = 2) { if (value === null || value === undefined) return '-'; const num = parseFloat(value); return isNaN(num) ? '-' : num.toFixed(decimals); }
+            function formatInt(value) { if (value === null || value === undefined) return '-'; const num = parseInt(value); return isNaN(num) ? '-' : num; }
+            function escapeHtml(unsafe) { return unsafe ? unsafe.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : ""; }
+
+            // --- Functions for Updating Actions Table ---
+            function initializeActionsTable() {
+                if (!document.getElementById('actions-table')) {
+                     let tableHtml = `<h2>Today's Actions & Executions</h2><table id="actions-table"><thead><tr><th>Day</th><th>Sess</th><th>Agent</th><th>Type</th><th>Action</th><th>Stock</th><th>Qty</th><th>Price</th><th>Detail / Counterparty</th></tr></thead><tbody></tbody></table>`;
+                     actionsOutputDiv.innerHTML = tableHtml;
+                }
+                 actionsTableBody = document.getElementById('actions-table').getElementsByTagName('tbody')[0];
+            }
+
+            function addToActionTable(data, type) {
+                if (!actionsTableBody) initializeActionsTable();
+                const newRow = actionsTableBody.insertRow(0);
+                newRow.insertCell().textContent = data.date;
+                newRow.insertCell().textContent = data.session;
+                newRow.insertCell().textContent = data.agent !== undefined ? data.agent : (data.buyer !== undefined ? data.buyer : data.seller);
+                newRow.insertCell().textContent = type === 'decision' ? 'Decided' : 'Executed';
+                let action = '-'; let stock = '-'; let qty = '-'; let price = '-'; let detail = '-';
+                if (type === 'decision' && data.action_details) {
+                    action = data.action_details.action_type;
+                    if (action !== 'no') {
+                        stock = data.action_details.stock;
+                        qty = formatInt(data.action_details.amount);
+                        price = formatNumber(data.action_details.price);
+                    }
+                } else if (type === 'executed') {
+                    action = data.description.includes('BUY') ? 'buy' : 'sell';
+                    stock = data.stock;
+                    qty = formatInt(data.amount);
+                    price = formatNumber(data.price);
+                    detail = `Buy:${data.buyer}/Sell:${data.seller}`;
+                }
+                newRow.insertCell().textContent = action;
+                newRow.insertCell().textContent = stock;
+                newRow.insertCell().textContent = qty;
+                newRow.insertCell().textContent = price;
+                newRow.insertCell().textContent = detail;
+            }
+
+            // --- Function for Updating Live Feed ---
+            function prependToFeed(htmlContent) {
+                const newItem = document.createElement('div');
+                newItem.className = 'feed-item';
+                newItem.innerHTML = htmlContent;
+                feedDiv.insertBefore(newItem, feedDiv.firstChild);
+                
+                while (feedDiv.children.length > MAX_FEED_ITEMS) { 
+                    feedDiv.removeChild(feedDiv.lastChild); 
+                }
+            }
+
+            // --- Shared Status Update Logic ---
+            function updateOverallStatus(statusData) {
+                let currentStatusText = statusData.status ? statusData.status.charAt(0).toUpperCase() + statusData.status.slice(1) : "Unknown";
+                statusDiv.className = statusData.status || "error";
+                let progressMessage = statusData.progress_message || statusData.message || "";
+                
+                if (statusData.status === 'running' && progressMessage) {
+                    let progressMatch = progressMessage.match(/Processing Day (\d+)\/(\d+)/);
+                    if (progressMatch) {
+                        progressBarContainer.style.display = 'block'; let currentDay = parseInt(progressMatch[1]); totalDays = parseInt(progressMatch[2]);
+                        let percent = totalDays > 0 ? Math.round((currentDay / totalDays) * 100) : 0; progressBar.style.width = percent + '%'; progressBar.textContent = percent + '%';
+                        currentStatusText += ` (${progressMessage})`;
+                    } else if (progressMessage.includes("initializing") || progressMessage.includes("starting")) {
+                        progressBarContainer.style.display = 'block'; progressBar.style.width = '2%'; progressBar.textContent = ''; currentStatusText += ` (${progressMessage})`;
+                    } else { progressBarContainer.style.display = 'none'; }
+                } else if (statusData.status === 'completed') {
+                     progressBarContainer.style.display = 'block'; progressBar.style.width = '100%'; progressBar.textContent = '100%'; currentStatusText += ` (${progressMessage || 'Finished!'})`;
+                } else { progressBarContainer.style.display = 'none'; }
+                
+                statusDiv.textContent = "Status: " + currentStatusText;
+                
+                if (statusData.status === 'error' && statusData.error_message) {
+                    let errorP = document.getElementById('mainErrorMessage');
+                    if (!errorP) {
+                        errorP = document.createElement('div');
+                        errorP.id = 'mainErrorMessage';
+                        errorP.className = 'error-message';
+                         document.querySelector('.container').insertBefore(errorP, document.querySelector('.flex-container'));
+                    }
+                    errorP.innerHTML = `<strong>Error during simulation:</strong><br>${escapeHtml(statusData.error_message.split('\n')[0])}`;
+                }
+                 if (statusData.status === 'idle') {
+                    actionsOutputDiv.innerHTML = `<h2>Today's Actions & Executions</h2><p>No simulation running.</p>`;
+                    feedDiv.innerHTML = '<p>No simulation running.</p>';
+                    if(actionsTableBody) actionsTableBody = null;
+                }
+            }
+
+            // --- Initialize ---
+            statusDiv.textContent = "Connecting to simulation stream...";
+            initializeActionsTable(); 
+            
+            // --- Start SSE for Live Feed AND Actions Table ---
+            const eventSource = new EventSource("{{ url_for('stream_results') }}");
+
+            eventSource.onopen = function() { console.log("SSE Connection opened."); statusDiv.textContent = "Connected. Waiting for simulation data..."; statusDiv.className = "running"; };
+            eventSource.addEventListener('connection_ack', function(event) { console.log("SSE Connection Acknowledged:", event.data); prependToFeed(`<strong>${escapeHtml(event.data)}</strong>`); });
+
+            // --- SSE Event Listeners ---
+            eventSource.addEventListener('session_action_decision', function(event) { const data = JSON.parse(event.data); addToActionTable(data, 'decision'); });
+            eventSource.addEventListener('trade_executed', function(event) { const data = JSON.parse(event.data); addToActionTable(data, 'executed'); });
+            eventSource.addEventListener('daily_prediction', function(event) {
+                const data = JSON.parse(event.data);
+                let pred = data.prediction;
+                let predText = `Loan:${pred.loan}, BuyA:${pred.buy_A}, SellA:${pred.sell_A}, BuyB:${pred.buy_B}, SellB:${pred.sell_B}`;
+                prependToFeed(`<strong>Prediction (for Day ${data.date + 1}):</strong> Agent ${data.agent} -> <span class="feed-prediction">${predText}</span>`);
+            });
+            eventSource.addEventListener('forum_post', function(event) { const data = JSON.parse(event.data); let text = `<strong>Forum Post (Day ${data.date} End):</strong> Agent ${data.agent} says:`; let postContent = `<div class="feed-item-post">${escapeHtml(data.message)}</div>`; prependToFeed(text + postContent); });
+            eventSource.addEventListener('loan_decision', function(event) { const data = JSON.parse(event.data); let decisionText = `Agent ${data.agent} decided `; if (data.decision.loan === 'yes') { decisionText += `<span class="feed-loan">to take Loan Type ${data.decision.loan_type} for $${formatNumber(data.decision.amount)}</span>.`; } else { decisionText += `not to take a loan.`; } prependToFeed(`<strong>Loan Decision (Day ${data.date}):</strong> ${decisionText}`); });
+            eventSource.addEventListener('stock_price_update', function(event) { const data = JSON.parse(event.data); prependToFeed(`<strong>Price Update (D${data.date} S${data.session} End):</strong> Stock A: ${formatNumber(data.stock_a)}, Stock B: ${formatNumber(data.stock_b)}`); });
+            eventSource.addEventListener('market_event', function(event) { const data = JSON.parse(event.data); prependToFeed(`<strong>Market Event (Day ${data.date}):</strong> ${escapeHtml(data.message)}`); });
+            eventSource.addEventListener('agent_status', function(event) { const data = JSON.parse(event.data); prependToFeed(`<strong>Agent Status (Day ${data.date}):</strong> Agent ${data.agent} is now ${data.status}.`); });
+            eventSource.addEventListener('day_start', function(event) { const data = JSON.parse(event.data); prependToFeed(`<strong>----- Day ${data.date} Started -----</strong>`); });
+            eventSource.addEventListener('session_start', function(event) { const data = JSON.parse(event.data); prependToFeed(`<strong>Session ${data.session} Started</strong>`); });
+            eventSource.addEventListener('status_update', function(event) { const statusData = JSON.parse(event.data); updateOverallStatus(statusData); });
+            eventSource.addEventListener('progress_update', function(event) { const progressData = JSON.parse(event.data); updateOverallStatus(progressData); });
+            
+            eventSource.addEventListener('stream_end', function(event) {
+                 console.log("SSE Stream End Signal Received:", event.data); let finalMessage = "Simulation stream ended."; if (event.data) { try { let dataObj = JSON.parse(event.data); if(dataObj.message) finalMessage += " " + dataObj.message; } catch(e) { finalMessage += " " + escapeHtml(event.data); } }
+                 if (!statusDiv.classList.contains('completed') && !statusDiv.classList.contains('error')) { statusDiv.textContent = finalMessage; }
+                 eventSource.close();
+                 if (statusDiv.classList.contains('completed') || statusDiv.classList.contains('error')) { if(progressBar.style.width !== '100%' && statusDiv.classList.contains('completed')){ progressBar.style.width = '100%'; progressBar.textContent = '100%'; } else if (progressBarContainer.style.display !== 'none' && statusDiv.classList.contains('error')){ progressBarContainer.style.display = 'none'; } }
+            });
+            eventSource.onerror = function(err) {
+                console.error("EventSource failed:", err);
+                 if (!statusDiv.classList.contains('completed') && !statusDiv.classList.contains('error')) { statusDiv.textContent = "Event stream connection error or closed."; statusDiv.className = "error"; }
+                 eventSource.close(); progressBarContainer.style.display = 'none';
+                 prependToFeed('<strong class="error">Event stream connection failed. Live updates stopped.</strong>');
+            };
+        });
+    </script>
+</body>
+</html>
