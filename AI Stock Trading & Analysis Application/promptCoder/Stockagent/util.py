@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Get API key from environment variable
-GEMINI_API_KEY = "AIzaSyD3zzqEwu_ktToqNFdKLQoJ9jyBegXZwsQ"
+GEMINI_API_KEY = "YOUR_GEMINI_API_KEY_HERE"
 
 # 基础设置
 AGENTS_NUM = 3  # 交易员数量
