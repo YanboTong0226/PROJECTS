@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Stock Analysis - Redirecting</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+    <script>
+        // 检查用户是否已登录
+        window.onload = function() {
+            console.log('Checking login status...');
+            // 检查是否有登录状态
+            fetch('http://localhost:3000/api/check-login', {
+                method: 'GET',
+                credentials: 'include'
+            })
+            .then(response => {
+                console.log('Response status:', response.status);
+                return response.json();
+            })
+            .then(data => {
+                console.log('Login check response:', data);
+                if (data.loggedIn) {
+                    console.log('User is logged in, redirecting to singleStock.html');
+                    window.location.href = 'singleStock.html';
+                } else {
+                    console.log('User is not logged in, redirecting to login.html');
+                    window.location.href = 'login.html';
+                }
+            })
+            .catch(error => {
+                console.error('Error checking login status:', error);
+                // 如果发生错误，默认跳转到登录页面
+                window.location.href = 'login.html';
+            });
+        };
+    </script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* 与 login.html 统一的背景 */
+            background: linear-gradient(135deg, #F7F9FC 0%, #D2DAE6 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #1E293B; /* 深色文字 */
+        }
+        .loading {
+            text-align: center;
+            /* 使用玻璃卡片样式 */
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 40px 50px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+        }
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #E2E8F0; /* 浅灰色轨道 */
+            border-top: 5px solid #0066CC; /* 蓝色旋转 */
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        h2 {
+            color: #1E293B;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #475569;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading">
+        <h2>Redirecting...</h2>
+        <div class="spinner"></div>
+        <p>Please wait while we redirect you to the appropriate page.</p>
+    </div>
+</body>
+</html>

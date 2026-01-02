@@ -1,0 +1,86 @@
+/* styles.css */
+
+
+body {
+    font-family: 'Arial', sans-serif;
+
+    background: linear-gradient(135deg, #6e7dff, #ff7b9d);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#login-form, #register-form {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+}
+
+#message {
+    margin: 20px 0;
+    color: red;
+}
+
+label {
+    display: block;
+    margin: 10px 0 5px;
+    font-size: 1em;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+input[type="password"] {
+    font-family: 'Arial', sans-serif;
+}
+
+button {
+    background-color: #5c6bc0;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #3e4a8f;
+}
+
+p {
+    font-size: 0.9em;
+    color: #333;
+}
+
+#register-form {
+    display: none;
+}
+
+.toggle-button {
+    background-color: transparent;
+    border: none;
+    color: #5c6bc0;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.toggle-button:hover {
+    color: #3e4a8f;
+}

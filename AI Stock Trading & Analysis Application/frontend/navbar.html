@@ -1,0 +1,88 @@
+<nav class="navbar">
+    <div class="nav-container">
+        <div class="nav-brand">
+            StockAgent AI
+        </div>
+        <ul class="navbar-links">  
+            <li><a href="singleStock.html"><i class="fas fa-chart-line"></i> Single Stock</a></li>
+            <li><a href="multipleStockAnalysis.html"><i class="fas fa-chart-bar"></i> Multiple Stocks</a></li>
+            <li><a href="virtualPortfolio.html"><i class="fas fa-wallet"></i> Virtual Portfolio</a></li>
+            <li><a href="userInformation.html"><i class="fas fa-user"></i> User Info & AI Agent</a></li>
+            <li><a href="login.html" id="logout-link"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+        </ul>
+    </div>
+</nav>
+
+<style>
+    /* 确保 navbar.html 的样式在所有页面上都是最新的 */
+    .navbar {
+        position: fixed;
+        top: 20px; /* 与页面边缘留出间距 */
+        left: 20px;
+        right: 20px;
+        background: rgba(255, 255, 255, 0.7); /* 玻璃拟态背景 */
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1); /* 更柔和的阴影 */
+        z-index: 1000;
+        border-radius: 12px; /* 圆角 */
+        height: 70px; /* 增加高度 */
+    }
+
+    .nav-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 0 30px; /* 增加内边距 */
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        height: 100%;
+    }
+
+    .nav-brand {
+        color: #1E293B; /* 深色文字以保证对比度 */
+        font-size: 1.8rem; /* 增大字体 */
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+
+    .navbar-links {
+        display: flex;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        gap: 15px; /* 链接间距 */
+    }
+
+    .navbar-links li a {
+        color: #334155; /* 导航链接颜色 */
+        text-decoration: none;
+        padding: 10px 18px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .navbar-links li a:hover {
+        background-color: rgba(0, 102, 204, 0.1); /* 悬停效果 */
+        color: #0066CC;
+        transform: translateY(-2px);
+    }
+    
+    .navbar-links li a i {
+        font-size: 1.1rem;
+        color: #0066CC; /* 统一的图标颜色 */
+    }
+    
+    /* 为所有页面添加一个顶部内边距，以避免内容被导航栏遮挡 */
+    body {
+        padding-top: 110px; /* (navbar 高度 + 间距) */
+    }
+</style>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">

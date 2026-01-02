@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Stock Analysis</title>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        
+        <style>
+            /* 全局样式 */
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                background-color: #F7F9FC; /* 淡蓝色背景 */
+                min-height: 100vh;
+                padding: 20px;
+                color: #1E293B;
+                padding-top: 110px; /* 为固定的 navbar 留出空间 */
+            }
+            h1, h2, h3, h4, h5 { color: #1E293B; }
+            h1 { font-size: 2rem; margin-bottom: 20px; }
+            h2 { font-size: 1.5rem; margin-bottom: 15px; }
+            h3 { font-size: 1.25rem; margin-bottom: 10px; }
+            
+            /* 玻璃卡片样式 */
+            .card-panel {
+                background: rgba(255, 255, 255, 0.7);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                padding: 25px;
+                border-radius: 16px;
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+                margin-bottom: 20px;
+            }
+    
+            /* 顶部标签页按钮 */
+            .tab-bar {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 25px;
+                width: 100%;
+            }
+            .tab-btn {
+                padding: 12px 20px;
+                border: 1px solid #CBD5E1;
+                border-radius: 8px;
+                background-color: #FFFFFF;
+                color: #475569;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                flex-grow: 1;
+                text-align: center;
+                font-size: 1rem;
+            }
+            .tab-btn:hover {
+                border-color: #0066CC;
+                color: #0066CC;
+            }
+            .tab-btn.active {
+                background-color: #0066CC;
+                color: white;
+                border-color: #0066CC;
+                box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+            }
+    
+            /* 表单输入组 */
+            .form-group {
+                margin-bottom: 15px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #334155;
+            }
+            .form-group select,
+            .form-group input,
+            .form-group textarea {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #CBD5E1;
+                border-radius: 8px;
+                background-color: #F8FAFC;
+                font-size: 1rem;
+                color: #1E293B;
+                transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+            .form-group select:focus,
+            .form-group input:focus,
+            .form-group textarea:focus {
+                outline: none;
+                border-color: #0066CC;
+                box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+            }
+            textarea { resize: vertical; }
+            
+            /* 统一的按钮样式 */
+            .button-container {
+                margin-top: 20px;
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            .action-button {
+                width: 100%;
+                padding: 12px;
+                border: none;
+                border-radius: 8px;
+                font-size: 1rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+            .action-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            
+            .btn-primary { background: #0066CC; color: white; }
+            .btn-primary:hover { background: #004499; }
+            
+            .btn-green { background: #10B981; color: white; }
+            .btn-green:hover { background: #059669; }
+    
+            .btn-purple { background: #4C51BF; color: white; }
+            .btn-purple:hover { background: #4338CA; }
+    
+            /* 主布局 (Grid) */
+            .main-container {
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .main-content {
+                display: grid;
+                grid-template-columns: 1fr 2fr;
+                gap: 25px;
+            }
+            .left-panel {
+                position: sticky;
+                top: 110px; /* 匹配 navbar 的高度 + 间距 */
+                height: calc(100vh - 130px);
+                overflow-y: auto;
+            }
+            .right-panel {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+    
+    
+            /* 右侧面板卡片 */
+            .chart-area {
+                height: 400px;
+                display: flex;
+                flex-direction: column;
+            }
+            .chart-placeholder {
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #64748B;
+                font-style: italic;
+                background-color: #F8FAFC;
+                border-radius: 8px;
+                flex-grow: 1;
+            }
+            #trend-chart {
+                display: none; /* 默认隐藏 */
+            }
+            
+            /* 消息提示 */
+            .message { margin-top: 15px; padding: 12px; border-radius: 8px; }
+            .message.success { background: #D1FAE5; color: #047857; }
+            .message.error { background: #FEE2E2; color: #B91C1C; }
+    
+            /* 余额显示 */
+            .balance-container {
+                background: #F8FAFC;
+                padding: 20px;
+                border-radius: 8px;
+                margin-bottom: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: 1px solid #E2E8F0;
+            }
+            .balance-label { font-size: 1.1rem; color: #334155; font-weight: 600; }
+            .balance-amount { font-size: 1.5rem; color: #0066CC; font-weight: 700; }
+            .balance-amount.insufficient { color: #E11D48; }
+    
+            /* AI Q&A 区域 */
+            .qa-container { padding-top: 10px; }
+            .answer-content {
+                background: #F8FAFC;
+                border: 1px solid #E2E8F0;
+                padding: 15px;
+                border-radius: 8px;
+                margin-top: 20px;
+                white-space: pre-wrap;
+                min-height: 100px;
+            }
+    
+            /* AI 个性化建议 */
+            .ai-advice-section {
+                margin-top: 20px;
+                background: #E0E7FF; /* 淡紫色 */
+                border-radius: 12px;
+                padding: 20px;
+                text-align: center;
+            }
+            .ai-advice-section h3 { color: #4338CA; }
+            .ai-advice-desc { color: #4C51BF; margin-bottom: 15px; }
+            .ai-advice-btn { background: #4C51BF; color: white; }
+            .ai-advice-btn:hover { background: #4338CA; }
+            .ai-advice-result {
+                margin-top: 15px;
+                background: #FFFFFF;
+                border-radius: 8px;
+                padding: 15px;
+                color: #1E293B;
+                min-height: 40px;
+                text-align: left;
+                overflow-wrap: break-word;
+            }
+    
+            /* 加载动画 */
+            .loading-container {
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                padding: 2rem; text-align: center; min-height: 200px;
+            }
+            .loading-spinner {
+                width: 50px; height: 50px; border: 5px solid #E2E8F0;
+                border-top: 5px solid #0066CC; border-radius: 50%;
+                animation: spin 1s linear infinite; margin-bottom: 1rem;
+            }
+            .loading-text { font-size: 1.2rem; color: #475569; font-weight: 500; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    
+            /* 错误提示 */
+            .error-message {
+                padding: 1rem; background-color: #FEE2E2; border: 1px solid #FECACA;
+                border-radius: 8px; color: #B91C1C;
+            }
+            .error-message h3 { margin-top: 0; color: #B91C1C; }
+    
+            /* 投资建议详情 */
+            .advice-container { padding: 10px; }
+            .risk-metrics-grid, .risk-components-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+                gap: 15px;
+                margin-top: 15px;
+            }
+            .risk-metric-item, .component-item {
+                background-color: #F8FAFC;
+                padding: 12px;
+                border-radius: 6px;
+                border: 1px solid #E2E8F0;
+            }
+            .metric-label, .component-label {
+                font-weight: 600; color: #475569; display: block; margin-bottom: 5px; font-size: 0.9em;
+            }
+            .metric-value, .component-value { color: #1E293B; font-size: 1.1em; font-weight: 600; }
+            
+            .analysis-content {
+                white-space: pre-wrap; line-height: 1.6; padding: 20px;
+                background-color: #F8FAFC; border-radius: 8px;
+            }
+        </style>
+    </head>
+    
+    <body>
+    <div id="navbar-container"></div>
+    <div class="main-container">
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="tab-bar">
+                    <button id="tab-analysis" class="tab-btn active">Analysis</button>
+                    <button id="tab-purchase" class="tab-btn">Purchase</button>
+                    <button id="tab-qa" class="tab-btn">AI Q&A</button>
+                </div>
+    
+                <div id="analysis-section" class="card-panel">
+                    <div class="stock-selection">
+                        <h3>Select Stock</h3>
+                        <div class="form-group">
+                            <label for="investment-period">Investment Horizon:</label>
+                            <select id="investment-period" required>
+                                <option value="1">1 Year</option>
+                                <option value="2">2 Years</option>
+                                <option value="5">5 Years</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="stock-ticker">Select Stock Ticker:</label>
+                            <select id="stock-ticker" required>
+                                <option value="">Loading...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="capital">Initial Capital:</label>
+                            <input type="number" id="capital" placeholder="Enter your initial capital" required>
+                        </div>
+                        <div class="button-container">
+                            <button id="trend-btn" class="action-button btn-primary">View Trend Chart</button>
+                            <button id="submit-btn" class="action-button btn-primary">Get Investment Advice</button>
+                            <button id="ai-chart" class="action-button btn-primary">Get AI Chart Analysis</button>
+                        </div>
+                    </div>
+                </div>
+    
+                <div id="purchase-section" style="display:none;" class="card-panel">
+                    <div class="balance-container">
+                        <span class="balance-label">Available Balance:</span>
+                        <span id="purchase-balance" class="balance-amount">$0.00</span>
+                    </div>
+                    <div class="stock-selection">
+                        <h3>Stock Purchase</h3>
+                        <form id="buy-stock-form">
+                            <div class="form-group">
+                                <label for="purchase-stock-symbol">Select Stock:</label>
+                                <select id="purchase-stock-symbol" required>
+                                    <option value="">Select a stock...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="stock-quantity">Quantity:</label>
+                                <input type="number" id="stock-quantity" placeholder="Enter quantity to buy" min="1" required>
+                            </div>
+                            <div class="button-container">
+                                <button type="submit" class="action-button btn-green">Buy Stock</button>
+                            </div>
+                        </form>
+                        <div class="message" id="buy-stock-message"></div>
+                    </div>
+                </div>
+    
+                <div id="qa-section" style="display:none;" class="card-panel">
+                    <div class="stock-selection">
+                        <h3>AI Stock Q&A</h3>
+                        <div class="qa-container">
+                            <div class="question-input form-group">
+                                <textarea id="question-input" placeholder="Please enter your question..." rows="4"></textarea>
+                                <button id="ask-btn" class="action-button btn-purple">Ask</button>
+                            </div>
+                            <div id="loading-indicator" style="display: none;" class="loading-container">
+                                <div class="loading-spinner"></div>
+                            </div>
+                            <div id="error-message" style="display: none;" class="error"></div>
+                            <div id="answer-container" class="answer-content">Ask a question to see the AI's response here.</div>
+                        </div>
+                    </div>
+                    <div class="ai-advice-section">
+                        <h3>AI Personalized Investment Advice</h3>
+                        <p class="ai-advice-desc">Based on your historical transactions and account balance.</p>
+                        <button class="ai-advice-btn action-button" onclick="getPersonalAdvice()">Get AI Personalized Investment Advice</button>
+                        <div id="ai-advice-result" class="ai-advice-result"></div>
+                    </div>
+                </div>
+            </div>
+    
+            <div class="right-panel">
+                <div class="result-section card-panel">
+                    <h3>Trend Chart</h3>
+                    <div class="chart-area">
+                         <div id="chart-placeholder" class="chart-placeholder">
+                            Select a stock ticker and click 'View Trend Chart'.
+                        </div>
+                        <canvas id="trend-chart"></canvas>
+                    </div>
+                </div>
+                <div class="result-section card-panel">
+                    <h3>Investment Advice</h3>
+                    <div id="investment-advice">Select stock and click "Get Investment Advice"</div>
+                </div>
+                <div class="result-section card-panel" id="ai-analysis-section-wrapper">
+                    <h3>AI Chart Analysis</h3>
+                    <div id="ai-analysis-section" class="section">
+                        <div class="ai-analysis-container">Select stock and click "Get AI Chart Analysis"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function scrollToElement(elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+    
+        // --- 辅助函数：显示加载和错误 ---
+        function showLoading(elementId, message = 'Loading...') {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.innerHTML = `
+                <div class="loading-container">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">${message}</div>
+                </div>`;
+        }
+        
+        function showError(elementId, message) {
+            const resultDiv = document.getElementById(elementId);
+            resultDiv.innerHTML = `<div class="error-message">${message}</div>`;
+        }
+    
+        // --- 股票列表加载 ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('http://localhost:3000/api/stocks', {
+                    method: "GET",
+                    credentials: 'include',
+                });
+                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+                const result = await response.json();
+                if (result.success) {
+                    const stockList = result.stocks;
+                    const stockSelect = document.getElementById("stock-ticker");
+                    const purchaseSelect = document.getElementById("purchase-stock-symbol");
+                    
+                    const optionsHTML = stockList.map(stock => `<option value="${stock}">${stock}</option>`).join('');
+                    
+                    stockSelect.innerHTML = '<option value="">Select a stock...</option>' + optionsHTML;
+                    purchaseSelect.innerHTML = '<option value="">Select a stock...</option>' + optionsHTML;
+                }
+            } catch (error) {
+                console.error("error in fetching stock ticker：", error);
+                alert("error in fetching stock ticker");
+            }
+        });
+    
+        // --- 按钮 1: 获取投资建议 ---
+        document.getElementById('submit-btn').addEventListener('click', async () => {
+            const investmentPeriod = document.getElementById('investment-period').value;
+            const stockTicker = document.getElementById('stock-ticker').value;
+            const initialCapital = parseFloat(document.getElementById('capital').value);
+    
+            if (!stockTicker) {
+                alert("Please select a stock ticker."); return;
+            }
+            if (isNaN(initialCapital) || initialCapital <= 0) {
+                alert("Please enter a valid initial capital."); return;
+            }
+            
+            const adviceDiv = document.getElementById('investment-advice');
+            showLoading('investment-advice', 'Getting investment advice...');
+    
+            try {
+                const response = await fetch(`http://localhost:3000/api/getSingleAdvice?stock=${stockTicker}&period=${investmentPeriod}&capital=${initialCapital}`);
+                const advice = await response.json();
+                
+                if (advice.success) {
+                    adviceDiv.innerHTML = `
+                        <div class="advice-container">
+                            <div class="basic-advice">
+                                <h3>Basic Investment Advice</h3>
+                                <div class="risk-metrics-grid"> <div class="risk-metric-item">
+                                        <span class="metric-label">Investment Strategy:</span>
+                                        <span class="metric-value">${advice.strategy}</span>
+                                    </div>
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">Suggested Trading Frequency:</span>
+                                        <span class="metric-value">${advice.frequency}</span>
+                                    </div>
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">Real Price:</span>
+                                        <span class="metric-value">$${advice.currentPrice}</span>
+                                    </div>
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">Stop Loss Price:</span>
+                                        <span class="metric-value">$${advice.stopLoss}</span>
+                                    </div>
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">Position Size:</span>
+                                        <span class="metric-value">${advice.positionSize} shares</span>
+                                    </div>
+                                </div>
+                            </div>
+    
+                            <div class="risk-metrics">
+                                <h3>Risk Analysis</h3>
+                                <div class="risk-metrics-grid">
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">Volatility:</span>
+                                        <span class="metric-value">${(advice.riskMetrics.volatility * 100).toFixed(2)}%</span>
+                                    </div>
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">ATR:</span>
+                                        <span class="metric-value">${advice.riskMetrics.atr.toFixed(2)}</span>
+                                    </div>
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">Max Drawdown:</span>
+                                        <span class="metric-value">${(advice.riskMetrics.maxDrawdown * 100).toFixed(2)}%</span>
+                                    </div>
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">Value at Risk (95%):</span>
+                                        <span class="metric-value">${(advice.riskMetrics.var95 * 100).toFixed(2)}%</span>
+                                    </div>
+                                    <div class="risk-metric-item">
+                                        <span class="metric-label">Conditional VaR (95%):</span>
+                                        <span class="metric-value">${(advice.riskMetrics.cvar95 * 100).toFixed(2)}%</span>
+                                    </div>
+                                </div>
+    
+                                <div class="risk-components">
+                                    <h4>Risk Components</h4>
+                                    <div class="risk-components-grid">
+                                        <div class="component-item">
+                                            <span class="component-label">Volatility Component:</span>
+                                            <span class="component-value">${advice.riskMetrics.components.volatility.toFixed(2)}</span>
+                                        </div>
+                                        <div class="component-item">
+                                            <span class="component-label">Beta Component:</span>
+                                            <span class="component-value">${advice.riskMetrics.components.beta.toFixed(2)}</span>
+                                        </div>
+                                        <div class="component-item">
+                                            <span class="component-label">Max Drawdown Component:</span>
+                                            <span class="component-value">${advice.riskMetrics.components.maxDrawdown.toFixed(2)}</span>
+                                        </div>
+                                        <div class="component-item">
+                                            <span class="component-label">VaR Component:</span>
+                                            <span class="component-value">${advice.riskMetrics.components.var95.toFixed(2)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    showError('investment-advice', advice.message || 'Could not fetch investment advice.');
+                }
+            } catch (error) {
+                console.error("Error fetching investment advice:", error);
+                showError('investment-advice', 'Failed to get investment advice. Please ensure the Node.js server is running and connected to MySQL.');
+            }
+        });
+    
+        // --- 按钮 2: 查看图表 ---
+        let currentChart = null;
+        const chartCanvas = document.getElementById('trend-chart');
+        const chartPlaceholder = document.getElementById('chart-placeholder');
+    
+        document.getElementById('trend-btn').addEventListener('click', async () => {
+            const stockTicker = document.getElementById('stock-ticker').value;
+            if (!stockTicker) {
+                alert("Please select a stock ticker."); return;
+            }
+    
+            if (currentChart) {
+                currentChart.destroy();
+                chartCanvas.style.display = 'none';
+                chartPlaceholder.style.display = 'flex';
+                currentChart = null;
+                document.getElementById('trend-btn').textContent = 'View Trend Chart';
+                return;
+            }
+            
+            showLoading('investment-advice', 'Fetching chart data...'); // Show loading in advice box
+    
+            try {
+                const response = await fetch(`http://localhost:3000/api/stock-trend?stock=${stockTicker}`);
+                const trendData = await response.json();
+    
+                if (trendData.success) {
+                    window.stockData = trendData.data;
+                    const dates = trendData.data.map(item => {
+                        const rawDate = String(item.date);
+                        return `${rawDate.slice(0, 4)}-${rawDate.slice(4, 6)}-${rawDate.slice(6, 8)}`;
+                    });
+                    const prices = trendData.data.map(item => item.price);
+    
+                    const ctx = chartCanvas.getContext('2d');
+                    chartCanvas.style.display = 'block';
+                    chartPlaceholder.style.display = 'none';
+    
+                    currentChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [{
+                                label: 'Closing Prices',
+                                data: prices,
+                                borderColor: '#0066CC',
+                                borderWidth: 2,
+                                fill: true,
+                                backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                                tension: 0.1,
+                                pointRadius: 0
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: { title: { display: true, text: 'Date' }, ticks: { maxTicksLimit: 10 } },
+                                y: { title: { display: true, text: 'Price' } }
+                            }
+                        }
+                    });
+                    document.getElementById('trend-btn').textContent = 'Hide Chart';
+                    document.getElementById('investment-advice').innerHTML = "Chart loaded. You can now get investment or AI analysis.";
+                } else {
+                    showError('investment-advice', 'Failed to fetch trend data.');
+                }
+            } catch (error) {
+                console.error("Error fetching trend data:", error);
+                showError('investment-advice', "Failed to get trend data.");
+            }
+        });
+    
+        // --- 按钮 3: AI 图表分析 ---
+        document.getElementById('ai-chart').addEventListener('click', async () => {
+            const stockTicker = document.getElementById('stock-ticker').value;
+            const chartData = window.stockData;
+            
+            if (!stockTicker || !chartData) {
+                alert('Please select a stock and click "View Trend Chart" first');
+                return;
+            }
+            
+            // 从 advice div 中抓取数据
+            const adviceContainer = document.getElementById('investment-advice');
+            const basicAdvice = {
+                strategy: adviceContainer.querySelector('.basic-advice p:nth-child(1)')?.textContent?.split(':')[1]?.trim() || 'N/A',
+                frequency: adviceContainer.querySelector('.basic-advice p:nth-child(2)')?.textContent?.split(':')[1]?.trim() || 'N/A',
+                quantity: adviceContainer.querySelector('.basic-advice p:nth-child(5)')?.textContent?.split(':')[1]?.trim() || 'N/A',
+                currentPrice: adviceContainer.querySelector('.basic-advice p:nth-child(3)')?.textContent?.split(':')[1]?.trim() || 'N/A'
+            };
+            const riskMetrics = {
+                volatility: adviceContainer.querySelector('.risk-metrics-grid .risk-metric-item:nth-child(1) .metric-value')?.textContent || 'N/A',
+                maxDrawdown: adviceContainer.querySelector('.risk-metrics-grid .risk-metric-item:nth-child(3) .metric-value')?.textContent || 'N/A',
+            };
+            const riskComponents = {
+                var: adviceContainer.querySelector('.risk-components-grid .component-item:nth-child(4) .component-value')?.textContent || 'N/A',
+                cvar: adviceContainer.querySelector('.risk-metrics-grid .risk-metric-item:nth-child(5) .metric-value')?.textContent || 'N/A',
+                atr: adviceContainer.querySelector('.risk-metrics-grid .risk-metric-item:nth-child(2) .metric-value')?.textContent || 'N/A'
+            };
+    
+            const requestData = {
+                stockData: chartData,
+                stockTicker: stockTicker,
+                basicAdvice: basicAdvice,
+                riskMetrics: riskMetrics,
+                riskComponents: riskComponents
+            };
+            
+            const analysisSection = document.getElementById('ai-analysis-section');
+            showLoading('ai-analysis-section', 'AI is analyzing the chart...');
+    
+            try {
+                const response = await fetch('http://localhost:3000/api/analyze-chart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                const analysis = await response.json();
+    
+                if (analysis.success) {
+                    analysisSection.innerHTML = `<div class="analysis-content">${analysis.analysis}</div>`;
+                } else {
+                    showError('ai-analysis-section', `Analysis Failed: ${analysis.error || 'Please try again.'}`);
+                }
+            } catch (error) {
+                showError('ai-analysis-section', `Error: ${error.message}`);
+            }
+        });
+    
+        // --- Tab 切换逻辑 ---
+        document.getElementById('tab-analysis').addEventListener('click', () => {
+            document.getElementById('analysis-section').style.display = 'block';
+            document.getElementById('purchase-section').style.display = 'none';
+            document.getElementById('qa-section').style.display = 'none';
+            
+            document.getElementById('tab-analysis').classList.add('active');
+            document.getElementById('tab-purchase').classList.remove('active');
+            document.getElementById('tab-qa').classList.remove('active');
+        });
+    
+        document.getElementById('tab-purchase').addEventListener('click', async () => {
+            document.getElementById('analysis-section').style.display = 'none';
+            document.getElementById('purchase-section').style.display = 'block';
+            document.getElementById('qa-section').style.display = 'none';
+            
+            document.getElementById('tab-analysis').classList.remove('active');
+            document.getElementById('tab-purchase').classList.add('active');
+            document.getElementById('tab-qa').classList.remove('active');
+    
+            try {
+                await fetchPurchaseBalance();
+                // await fetchPurchaseStockList(); // This is already loaded
+            } catch (error) {
+                console.error('Error loading purchase page data:', error);
+            }
+        });
+    
+        document.getElementById('tab-qa').addEventListener('click', () => {
+            document.getElementById('analysis-section').style.display = 'none';
+            document.getElementById('purchase-section').style.display = 'none';
+            document.getElementById('qa-section').style.display = 'block';
+            
+            document.getElementById('tab-analysis').classList.remove('active');
+            document.getElementById('tab-purchase').classList.remove('active');
+            document.getElementById('tab-qa').classList.add('active');
+        });
+    
+        // --- AI Q&A 逻辑 ---
+        document.getElementById('ask-btn').addEventListener('click', async () => {
+            const questionInput = document.getElementById('question-input');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const errorMessage = document.getElementById('error-message');
+            const answerContainer = document.getElementById('answer-container');
+    
+            const question = questionInput.value.trim();
+            if (!question) {
+                alert('Please enter a question');
+                return;
+            }
+    
+            try {
+                loadingIndicator.style.display = 'block';
+                errorMessage.style.display = 'none';
+                answerContainer.innerHTML = '';
+    
+                const response = await fetch('http://localhost:3000/api/ask', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', },
+                    body: JSON.stringify({ question }),
+                });
+    
+                if (!response.ok) {
+                    throw new Error('Failed to get answer');
+                }
+    
+                const data = await response.json();
+                answerContainer.innerHTML = data.answer;
+            } catch (error) {
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            } finally {
+                loadingIndicator.style.display = 'none';
+            }
+        });
+    
+        // --- AI 个性化建议逻辑 ---
+        async function getPersonalAdvice() {
+            const email = localStorage.getItem('email');
+            if (!email) {
+                alert('Please log in first');
+                return;
+            }
+            
+            const resultDiv = document.getElementById('ai-advice-result');
+            resultDiv.textContent = 'AI is analyzing, please wait...';
+            
+            try {
+                const res = await fetch('http://localhost:3000/api/ai-personal-advice', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email})
+                });
+                const data = await res.json();
+                resultDiv.textContent = data.advice || data.error;
+            } catch (error) {
+                resultDiv.textContent = `Error connecting to AI: ${error.message}`;
+            }
+        }
+    
+        // --- 购买和余额函数 ---
+        async function fetchPurchaseBalance() {
+            try {
+                const response = await fetch('http://localhost:3000/api/user-balance', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+    
+                if (data.success) {
+                    const balanceElement = document.getElementById('purchase-balance');
+                    if (balanceElement) {
+                        const balance = parseFloat(data.balance);
+                        if (!isNaN(balance)) {
+                            balanceElement.textContent = `$${balance.toFixed(2)}`;
+                            balanceElement.classList.toggle('insufficient', balance < 100);
+                        } else {
+                            console.error('Invalid balance value:', data.balance);
+                        }
+                    }
+                } else {
+                    console.error('Failed to fetch balance:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching user balance:', error);
+            }
+        }
+    
+        document.getElementById('buy-stock-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const symbol = document.getElementById('purchase-stock-symbol').value.trim();
+            const quantity = parseInt(document.getElementById('stock-quantity').value);
+    
+            if (!symbol) { alert('Please select a stock'); return; }
+            if (!quantity || quantity <= 0) { alert('Please enter a valid quantity'); return; }
+    
+            const messageEl = document.getElementById('buy-stock-message');
+            messageEl.textContent = 'Processing buy order...';
+            messageEl.className = 'message';
+    
+            try {
+                const response = await fetch('http://localhost:3000/api/buy-stock', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ symbol, quantity }),
+                    credentials: 'include'
+                });
+    
+                const result = await response.json();
+                if (response.ok) {
+                    messageEl.textContent = result.message;
+                    messageEl.classList.add('success');
+                    document.getElementById('stock-quantity').value = '';
+                    await fetchPurchaseBalance();
+                } else {
+                    messageEl.textContent = result.error || result.message || 'Error buying stock.';
+                    messageEl.classList.add('error');
+                }
+            } catch (error) {
+                console.error('Error buying stock:', error);
+                messageEl.textContent = 'Error buying stock. Please try again later.';
+                messageEl.classList.add('error');
+            }
+        });
+    
+        // --- 加载 Navbar ---
+        window.onload = function() {
+            fetch('navbar.html')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('navbar-container').innerHTML = data;
+                })
+                .catch(error => {
+                    console.error('Error loading navbar:', error);
+                });
+        };
+    </script>
+    </body>
+    </html>

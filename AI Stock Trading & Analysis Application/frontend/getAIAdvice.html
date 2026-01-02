@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat - Stock Q&A</title>
+    <style>
+        /* 全局样式 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F7F9FC; /* 淡蓝色背景 */
+            min-height: 100vh;
+            padding: 20px;
+            color: #1E293B;
+            padding-top: 110px; /* 为固定的 navbar 留出空间 */
+        }
+        h1 {
+            color: #1E293B;
+            font-size: 2rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        /* 玻璃卡片样式 */
+        .card-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        /* 聊天容器 */
+        .chat-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 200px); /* 视口高度 - 顶部间距 - 标题 */
+        }
+
+        /* 聊天记录框 */
+        .chat-box {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid #E2E8F0;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 消息气泡 */
+        .user, .ai {
+            padding: 12px 18px;
+            border-radius: 18px;
+            max-width: 80%;
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        
+        .user {
+            background-color: #0066CC; /* 统一的蓝色 */
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai {
+            background-color: #E2E8F0; /* 浅灰色 */
+            color: #1E293B;
+            margin-right: auto;
+            border-bottom-left-radius: 4px;
+        }
+
+        /* 输入区域 */
+        .input-area {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        #user-message {
+            flex-grow: 1;
+            padding: 14px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            color: #1E293B;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #user-message:focus {
+            outline: none;
+            border-color: #0066CC;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        #send-message-btn {
+            background-color: #4C51BF; /* AI 紫色 */
+            color: white;
+            border: none;
+            padding: 14px 25px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        #send-message-btn:hover {
+            background-color: #4338CA;
+            transform: translateY(-2px);
+        }
+
+        #typing-indicator {
+            font-style: italic;
+            color: #0066CC;
+            padding: 10px 0;
+            text-align: center;
+            height: 30px;
+            min-height: 1.5em; /* 确保它占有空间 */
+        }
+    </style>
+</head>
+<body>
+<div id="navbar-container"></div>
+
+<div class="main-content">
+    <div class="chat-container card-panel">
+        <h1>AI Chat</h1>
+        
+        <div id="chat-box" class="chat-box">
+             <div class="ai">Welcome! Ask me anything about stock trends, market analysis, or investment strategies.</div>
+        </div>
+
+        <div id="typing-indicator" style="display: none;">AI is typing...</div>
+
+        <div class="input-area">
+            <input type="text" id="user-message" placeholder="Enter your message" />
+            <button id="send-message-btn">Send</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- 您的 JavaScript 逻辑完全不变 ---
+
+    function addMessage(content, sender = 'user') {
+        const messageEl = document.createElement('div');
+        messageEl.classList.add(sender);
+        messageEl.textContent = content;
+        const chatBox = document.getElementById('chat-box');
+        chatBox.appendChild(messageEl);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const userMessageInput = document.getElementById('user-message');
+        const userMessage = userMessageInput.value.trim();
+        if (!userMessage) return;
+        
+        addMessage(userMessage, 'user');
+        userMessageInput.value = '';
+
+        document.getElementById('typing-indicator').style.display = 'block';
+
+        try {
+            const response = await fetch('http://localhost:3000/api/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: userMessage }),
+            });
+            
+            const result = await response.json();
+
+            if (response.ok) {
+                const aiResponse = result.response;
+                addMessage(aiResponse, 'ai');
+            } else {
+                throw new Error(result.error || 'Failed to get response');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            addMessage('Error: Could not contact AI server. Please ensure Node.js server is running.', 'ai');
+        } finally {
+            document.getElementById('typing-indicator').style.display = 'none';
+        }
+    }
+
+    document.getElementById('send-message-btn').addEventListener('click', sendMessage);
+
+    document.getElementById('user-message').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    window.onload = function() {
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('navbar-container').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error loading navbar:', error);
+            });
+    };
+</script>
+
+</body>
+</html>
+

@@ -1,0 +1,2137 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Virtual Portfolio Tracker</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📊</text></svg>">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Global Styles */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F7F9FC;
+            min-height: 100vh;
+            padding: 20px;
+            padding-top: 110px;
+            color: #1E293B;
+        }
+        h1, h2, h3, h4, h5 { color: #1E293B; }
+        h1 { font-size: 2rem; margin-bottom: 20px; text-align: center; }
+        h2 { font-size: 1.5rem; margin-bottom: 15px; }
+        h3 { font-size: 1.25rem; margin-bottom: 10px; }
+        
+        /* Main Layout */
+        .main-container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 25px;
+        }
+        .left-panel {
+            position: sticky;
+            top: 110px;
+            height: calc(100vh - 130px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;          
+        }
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        /* Glass Card Style */
+        .card-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .form-group select,
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            background-color: #F8FAFC;
+            font-size: 1rem;
+            color: #1E293B;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group select:focus,
+        .form-group input:focus {
+            outline: none;
+            border-color: #0066CC;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+        
+        /* Button Styles */
+        .btn-primary {
+            background-color: #0066CC;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+        }
+        .btn-primary:hover {
+            background-color: #004499;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+        }
+        .btn-secondary {
+            background-color: #64748B;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .btn-secondary:hover {
+            background-color: #475569;
+        }
+        .btn-success {
+            background-color: #10B981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        
+        /* Tab Navigation */
+        .tab-bar {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+        .tab-btn {
+            padding: 12px 10px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            color: #475569;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-grow: 1;
+            text-align: center;
+            font-size: 0.95rem;
+        }
+        .tab-btn:hover {
+            border-color: #0066CC;
+            color: #0066CC;
+        }
+        .tab-btn.active {
+            background-color: #0066CC;
+            color: white;
+            border-color: #0066CC;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* Stock Selection Table */
+        .stock-table-container {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 10px;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+        }
+        .stock-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .stock-table td {
+            padding: 8px;
+            border-bottom: 1px solid #E2E8F0;
+            width: 50%;
+        }
+        .stock-table label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .stock-table label:hover {
+            background-color: #E0F2FE;
+        }
+        .stock-table input[type="checkbox"],
+        .stock-table input[type="radio"] { margin: 0; }
+        .stock-table tr.selected {
+            background-color: #E0F2FE;
+        }
+        
+        /* Search Box */
+        .search-box {
+            margin-bottom: 10px;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        
+        /* Selected Stocks List */
+        .selected-stocks-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+            min-height: 35px;
+        }
+        .selected-stock-tag {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        .selected-stock-tag .remove-btn {
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .selected-stock-tag .remove-btn:hover {
+            opacity: 1;
+        }
+        
+        /* Quantity Input Row */
+        .quantity-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #F8FAFC;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .quantity-row .symbol {
+            font-weight: 700;
+            color: #0066CC;
+            min-width: 70px;
+        }
+        .quantity-row input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+        }
+        .quantity-row .remove-btn {
+            color: #EF4444;
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+        
+        /* Portfolio Summary */
+        .portfolio-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background: linear-gradient(135deg, #0066CC 0%, #0052A3 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .summary-card.positive { 
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        }
+        .summary-card.negative { 
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+        .summary-card h3 {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 8px;
+            color: white;
+        }
+        .summary-card .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        
+        /* Holdings Table */
+        .holdings-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .holdings-table th {
+            background: #F8FAFC;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 2px solid #E2E8F0;
+        }
+        .holdings-table td {
+            padding: 12px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+        .holdings-table tr:hover {
+            background-color: #F8FAFC;
+        }
+        .profit { color: #10B981; font-weight: 600; }
+        .loss { color: #EF4444; font-weight: 600; }
+        
+        /* Winners & Losers */
+        .winners-losers {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .winners, .losers {
+            padding: 20px;
+            border-radius: 12px;
+        }
+        .winners {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .losers {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .stock-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        /* Chart Area */
+        .chart-container {
+            height: 350px;
+            position: relative;
+        }
+        .chart-placeholder {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748B;
+            font-style: italic;
+            background-color: #F8FAFC;
+            border-radius: 8px;
+        }
+        .chart-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .chart-controls-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .chart-tabs {
+            display: flex;
+            gap: 10px;
+        }
+        .chart-tab {
+            padding: 8px 16px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            color: #475569;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        .chart-tab:hover {
+            border-color: #0066CC;
+            color: #0066CC;
+        }
+        .chart-tab.active {
+            background-color: #0066CC;
+            color: white;
+            border-color: #0066CC;
+        }
+        /* Stock Selector Dropdown */
+        #chart-stock-select {
+            padding: 8px 12px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            background-color: white;
+            color: #334155;
+            font-size: 0.9rem;
+            cursor: pointer;
+            min-width: 150px;
+            width: auto;
+            /* 默认隐藏，由JS控制显示 */
+            display: none; 
+        }
+        
+        /* Message */
+        .message {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            display: none;
+        }
+        .message.success {
+            background: #D1FAE5;
+            color: #047857;
+            display: block;
+        }
+        .message.error {
+            background: #FEE2E2;
+            color: #B91C1C;
+            display: block;
+        }
+        
+        /* Loading & Empty State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748B;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #64748B;
+        }
+        
+        /* Sell Button */
+        .btn-sell {
+            background-color: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .btn-sell:hover {
+            background-color: #DC2626;
+            transform: translateY(-1px);
+        }
+        
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s ease;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .modal-header h2 {
+            margin: 0;
+            color: #1E293B;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #64748B;
+            transition: color 0.2s;
+        }
+        .modal-close:hover {
+            color: #1E293B;
+        }
+        .modal-body {
+            margin-bottom: 20px;
+        }
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        .btn-cancel {
+            background-color: #E2E8F0;
+            color: #475569;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .btn-cancel:hover {
+            background-color: #CBD5E1;
+        }
+        .btn-confirm-sell {
+            background-color: #EF4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .btn-confirm-sell:hover {
+            background-color: #DC2626;
+        }
+        
+        /* Stock Info in Modal */
+        .stock-info-card {
+            background: linear-gradient(135deg, #F8FAFC 0%, #E2E8F0 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .stock-info-card .symbol {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #0066CC;
+        }
+        .stock-info-card .details {
+            display: flex;
+            gap: 20px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #64748B;
+        }
+        
+        /* Basket Trading Section */
+        .basket-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed #CBD5E1;
+        }
+        .basket-info {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .basket-info h4 {
+            color: #92400E;
+            margin-bottom: 8px;
+        }
+        .basket-info p {
+            color: #78350F;
+            font-size: 0.9rem;
+        }
+        .basket-orders {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .basket-order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: #F8FAFC;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .basket-order-item .user-info {
+            font-size: 0.85rem;
+            color: #64748B;
+        }
+        .basket-order-item .order-details {
+            font-weight: 600;
+            color: #1E293B;
+        }
+        
+        /* Batch Trading Panel */
+        .batch-panel {
+            background: linear-gradient(135deg, #EFF6FF 0%, #DBEAFE 100%);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #93C5FD;
+        }
+        .batch-panel h4 {
+            color: #1E40AF;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .batch-orders-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .batch-order-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 80px 100px 40px;
+            gap: 10px;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .batch-order-row input,
+        .batch-order-row select {
+            padding: 8px;
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+        .batch-order-row .action-type {
+            font-weight: 600;
+        }
+        .batch-order-row .action-type.buy {
+            color: #10B981;
+        }
+        .batch-order-row .action-type.sell {
+            color: #EF4444;
+        }
+        
+        /* Flatpickr Custom Styles */
+        .flatpickr-calendar {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+        }
+        .flatpickr-day.selected {
+            background: #0066CC !important;
+            border-color: #0066CC !important;
+        }
+        .flatpickr-day:hover {
+            background: #E0F2FE;
+            border-color: #0066CC;
+        }
+        .flatpickr-current-month .flatpickr-monthDropdown-months {
+            background: #F8FAFC;
+        }
+        input[readonly].flatpickr-input {
+            background-color: white;
+            cursor: pointer;
+        }
+        input[readonly].flatpickr-input:hover {
+            border-color: #0066CC;
+        }
+        
+        /* AI Advice Button */
+        .ai-rebalance-btn {
+            width: 100%;
+            margin-top: 15px;
+            background: linear-gradient(135deg, #4F46E5 0%, #4338CA 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .ai-rebalance-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+        .ai-advice-container {
+            background: #EEF2FF;
+            border: 1px solid #C7D2FE;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            display: none;
+        }
+        .ai-advice-container h4 {
+            color: #3730A3;
+            margin-bottom: 10px;
+        }
+        .recommendation-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+        .recommendation-table th {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #C7D2FE;
+            color: #4338CA;
+        }
+        .recommendation-table td {
+            padding: 8px;
+            border-bottom: 1px solid #E0E7FF;
+        }
+        .action-buy { color: #10B981; font-weight: bold; }
+        .action-sell { color: #EF4444; font-weight: bold; }
+        .action-hold { color: #64748B; }
+    </style>
+</head>
+<body>
+    <div id="navbar-container"></div>
+    
+    <div class="main-container">
+        <h1>📊 Virtual Portfolio Tracker</h1>
+        
+        <div id="message" class="message"></div>
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="tab-bar">
+                    <button class="tab-btn active" onclick="switchTab('single')">Single Trade</button>
+                    <button class="tab-btn" onclick="switchTab('batch')">Batch Orders</button>
+                    <button class="tab-btn" onclick="switchTab('hedge')">Hedge Analysis</button>
+                </div>
+            
+                <div class="card-panel">
+                    
+                    <div id="single-tab" class="tab-content active">
+                        <h2>Buy Stocks</h2>
+                        
+                    <div class="form-group">
+                            <label>Selected Stocks:</label>
+                            <div id="selected-stocks-list" class="selected-stocks-list">
+                                <span style="color: #94A3B8; font-style: italic;">Select stocks from the list below</span>
+                    </div>
+                        </div>
+                        
+                        <div id="quantity-inputs"></div>
+                        
+                    <div class="form-group">
+                            <label for="buy-date">Buy Date (Optional - for historical simulation)</label>
+                            <input type="text" id="buy-date" placeholder="YYYY-MM-DD" readonly>
+                            <small style="color: #64748B; display: block; margin-top: 5px;">
+                                Click to select date in English format (Year-Month-Day)
+                            </small>
+                    </div>
+                        
+                        <button class="btn-primary" onclick="buyMultipleStocks()">
+                            Buy Selected Stocks
+                        </button>
+                    
+                    <div style="margin-top: 20px;">
+                            <h3>Select Stocks</h3>
+                        <div class="search-box">
+                            <input type="text" id="stock-search" placeholder="Search stocks..." onkeyup="filterStocks()">
+                        </div>
+                        <div class="stock-table-container">
+                            <table class="stock-table" id="stock-table">
+                                <tbody id="stock-table-body">
+                                    <tr><td colspan="2">Loading stocks...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                    
+                    <div id="batch-tab" class="tab-content">
+                        <div class="batch-panel">
+                            <h4>📋 Batch Order Entry</h4>
+                            <p style="color: #64748B; margin-bottom: 15px; font-size: 0.9rem;">
+                                Create multiple buy/sell orders at once
+                            </p>
+                            
+                            <div id="batch-orders-list" class="batch-orders-list">
+                                </div>
+            
+                            <button class="btn-secondary" onclick="addBatchOrderRow()" style="margin-top: 10px; width: 100%;">
+                                + Add Order
+                            </button>
+                            
+                            <div class="form-group" style="margin-top: 15px;">
+                                <label for="batch-date">Order Date (Optional)</label>
+                                <input type="text" id="batch-date" placeholder="YYYY-MM-DD" readonly>
+                                <small style="color: #64748B; display: block; margin-top: 5px;">
+                                    Click to select date in English format
+                                </small>
+                            </div>
+                            
+                            <button class="btn-success" onclick="executeBatchOrders()" style="margin-top: 10px; width: 100%;">
+                                Execute All Orders
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="hedge-tab" class="tab-content">
+                        <div class="hedge-panel" style="background: linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%); padding: 20px; border-radius: 12px; border: 1px solid #86EFAC;">
+                            <h4 style="color: #166534; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">
+                                🛡️ Hedge Analysis (Risk Reduction)
+                            </h4>
+                            <p style="color: #166534; margin-bottom: 15px; font-size: 0.9rem;">
+                                Analyze correlation between stocks to find hedging opportunities. Stocks with negative correlation can reduce portfolio risk when held together.
+                            </p>
+                            
+                            <div class="form-group">
+                                <label style="color: #166534; font-weight: 600;">Select Stocks to Analyze (2-5 stocks):</label>
+                                <div id="hedge-stock-selector" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; max-height: 150px; overflow-y: auto; padding: 10px; background: white; border-radius: 8px; border: 1px solid #BBF7D0;">
+                                    <!-- Stock checkboxes will be populated here -->
+                                </div>
+                            </div>
+                            
+                            <button onclick="analyzeHedging()" style="margin-top: 15px; width: 100%; background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%); color: white; border: none; border-radius: 8px; padding: 12px; font-weight: 600; cursor: pointer; font-size: 1rem;">
+                                📊 Analyze Hedging Opportunities
+                            </button>
+                            
+                            <!-- Hedge Analysis Results -->
+                            <div id="hedge-results" style="display: none; margin-top: 20px;">
+                                <div id="correlation-matrix-container" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    <h5 style="margin-bottom: 10px; color: #166534;">📈 Correlation Matrix</h5>
+                                    <div id="correlation-matrix" style="overflow-x: auto;"></div>
+                                </div>
+                                
+                                <div id="hedge-suggestions-container" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    <h5 style="margin-bottom: 10px; color: #166534;">✅ Hedging Suggestions</h5>
+                                    <div id="hedge-suggestions"></div>
+                                </div>
+                                
+                                <div id="risk-warnings-container" style="background: #FEF2F2; padding: 15px; border-radius: 8px; border: 1px solid #FECACA; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                                    <h5 style="margin-bottom: 10px; color: #DC2626;">⚠️ Risk Warnings (High Correlation)</h5>
+                                    <div id="risk-warnings"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="card-panel">
+                    <h2>Portfolio Summary</h2>
+                    <div class="portfolio-summary" id="portfolio-summary">
+                        <div class="loading">Loading portfolio...</div>
+                    </div>
+                </div>
+                
+                <div class="card-panel">
+                    <h2>Holdings</h2>
+                    <div id="holdings-container">
+                        <div class="loading">Loading holdings...</div>
+                    </div>
+                </div>
+                
+                <div class="card-panel">
+                    <div class="winners-losers">
+                        <div class="winners">
+                            <h3>🏆 Top Winners</h3>
+                            <div id="winners-list">
+                                <div class="loading">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="losers">
+                            <h3>📉 Top Losers</h3>
+                            <div id="losers-list">
+                                <div class="loading">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-panel">
+                    <h2>Price Timeline</h2>
+                    <div class="chart-header-row">
+                        <div class="chart-controls-left">
+                            <div class="chart-tabs">
+                                <button class="chart-tab active" onclick="showPortfolioTimeline(event)">Portfolio Value</button>
+                                <button class="chart-tab" onclick="showStockTimeline(event)">Individual Stocks</button>
+                            </div>
+                            <select id="chart-stock-select" onchange="changeStockChart()">
+                                <option value="">Select Stock</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <div id="chart-placeholder" class="chart-placeholder">
+                            Buy some stocks to see the price timeline
+                        </div>
+                        <canvas id="price-chart" style="display: none;"></canvas>
+                    </div>
+                </div>
+
+                <div class="card-panel">
+                    <h2>AI Portfolio Analysis</h2>
+                    <p style="color: #64748B; margin-bottom: 10px;">
+                        Get AI-powered suggestions to rebalance your portfolio for optimal risk-adjusted returns.
+                    </p>
+                    <button id="ai-rebalance-btn" class="ai-rebalance-btn" onclick="getPortfolioAnalysis()">
+                        🤖 Analyze & Optimize Portfolio
+                    </button>
+                    
+                    <div id="ai-advice-content" class="ai-advice-container">
+                        <h4>AI Analysis Result</h4>
+                        <p id="ai-analysis-text" style="font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px;"></p>
+                        
+                        <h4>Rebalancing Recommendations</h4>
+                        <table class="recommendation-table">
+                            <thead>
+                                <tr>
+                                    <th>Stock</th>
+                                    <th>Current %</th>
+                                    <th>Suggested %</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ai-recommendations-body">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="sell-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Sell Stock</h2>
+                <button class="modal-close" onclick="closeSellModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="stock-info-card">
+                    <div class="symbol" id="modal-stock-symbol">AAPL</div>
+                    <div class="details">
+                        <span>Available: <strong id="modal-available-qty">0</strong> shares</span>
+                        <span>Current Price: <strong id="modal-current-price">$0.00</strong></span>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="modal-sell-quantity">Quantity to Sell</label>
+                    <input type="number" id="modal-sell-quantity" placeholder="Enter quantity" min="1">
+                </div>
+                
+                <div class="form-group">
+                    <label for="modal-sell-date">Sell Date (Optional - for historical simulation)</label>
+                    <input type="text" id="modal-sell-date" placeholder="YYYY-MM-DD" readonly>
+                    <small style="color: #64748B; display: block; margin-top: 5px;">
+                        Click to select date in English format. Leave empty to use current market price.
+                    </small>
+                </div>
+                
+                <div id="modal-sell-preview" style="background: #F8FAFC; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                        <span>Estimated Proceeds:</span>
+                        <strong id="modal-estimated-proceeds">$0.00</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeSellModal()">Cancel</button>
+                <button class="btn-confirm-sell" onclick="confirmSell()">Confirm Sale</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="batch-sell-modal" class="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Batch Sell - Select Holdings</h2>
+                <button class="modal-close" onclick="closeBatchSellModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="batch-sell-holdings">
+                    </div>
+                
+                <div class="form-group" style="margin-top: 15px;">
+                    <label for="batch-sell-date">Sell Date (Optional)</label>
+                    <input type="text" id="batch-sell-date" placeholder="YYYY-MM-DD" readonly>
+                    <small style="color: #64748B; display: block; margin-top: 5px;">
+                        Click to select date in English format
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeBatchSellModal()">Cancel</button>
+                <button class="btn-confirm-sell" onclick="confirmBatchSell()">Sell Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let allStocks = [];
+        let selectedStocks = new Map(); // symbol -> quantity
+        let currentChart = null;
+        let portfolioData = null;
+        let currentSellStock = null;
+        let batchOrderCount = 0;
+        
+        // Chart Data Variables
+        // [修改]: 删除了 fullTimelineData, currentRange 等变量
+        let currentChartLabel = ''; // Store the current label (e.g., 'Portfolio Value' or 'AAPL Price')
+
+        // Standard US Stocks List
+        const STANDARD_US_STOCKS = [
+            'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'META', 'NVDA', 'TSLA', 'AMD', 'INTC', 'IBM',
+            'ORCL', 'CRM', 'ADBE', 'NFLX', 'PYPL', 'CSCO', 'QCOM', 'AVGO', 'TXN', 'MU',
+            'JPM', 'BAC', 'WFC', 'GS', 'MS', 'C', 'AXP', 'V', 'MA', 'BLK',
+            'JNJ', 'UNH', 'PFE', 'ABBV', 'MRK', 'LLY', 'TMO', 'ABT', 'BMY', 'AMGN',
+            'PG', 'KO', 'PEP', 'WMT', 'COST', 'HD', 'MCD', 'NKE', 'SBUX', 'DIS',
+            'XOM', 'CVX', 'COP', 'SLB', 'EOG',
+            'CAT', 'BA', 'GE', 'MMM', 'HON', 'UPS', 'RTX', 'LMT', 'DE',
+            'T', 'VZ', 'TMUS', 'CMCSA',
+            'BRK.B', 'UNP', 'NEE', 'LOW', 'SPGI'
+        ];
+
+        // Show Message
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = 'message ' + type;
+            setTimeout(() => {
+                messageEl.className = 'message';
+            }, 5000);
+        }
+
+        // Format Currency
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
+        }
+
+        // Format Percent
+        function formatPercent(value) {
+            return (value >= 0 ? '+' : '') + value.toFixed(2) + '%';
+        }
+
+        // Format Date
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+        }
+
+        // Tab Switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            if (tabName === 'hedge') {
+                populateHedgeStockSelector();
+            }
+        }
+
+        // Load Stock List
+        function loadStockList() {
+            allStocks = STANDARD_US_STOCKS.sort();
+            displayStockTable(allStocks);
+            populateHedgeStockSelector();
+        }
+
+        // ==================== Hedge Analysis Functions ====================
+        
+        // Populate Hedge Stock Selector
+        function populateHedgeStockSelector() {
+            const container = document.getElementById('hedge-stock-selector');
+            if (!container) return;
+            
+            let html = '';
+            allStocks.forEach(stock => {
+                html += `
+                    <label style="display: flex; align-items: center; gap: 4px; padding: 4px 8px; background: #F0FDF4; border-radius: 4px; cursor: pointer; font-size: 0.85rem;">
+                        <input type="checkbox" name="hedge-stock" value="${stock}" style="margin: 0;">
+                        ${stock}
+                    </label>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Analyze Hedging Opportunities
+        async function analyzeHedging() {
+            const checkboxes = document.querySelectorAll('input[name="hedge-stock"]:checked');
+            const selectedSymbols = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (selectedSymbols.length < 2) {
+                showMessage('Please select at least 2 stocks for hedge analysis', 'error');
+                return;
+            }
+            
+            if (selectedSymbols.length > 5) {
+                showMessage('Please select at most 5 stocks for better analysis', 'error');
+                return;
+            }
+            
+            showMessage('Analyzing correlation...', 'success');
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/hedge-analysis', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ symbols: selectedSymbols })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    displayHedgeResults(result.analysis);
+                    showMessage('Hedge analysis completed!', 'success');
+                } else {
+                    showMessage(result.error || 'Failed to analyze hedging', 'error');
+                }
+            } catch (error) {
+                console.error('Error analyzing hedging:', error);
+                showMessage('Error analyzing hedging: ' + error.message, 'error');
+            }
+        }
+
+        // Display Hedge Analysis Results
+        function displayHedgeResults(analysis) {
+            const resultsContainer = document.getElementById('hedge-results');
+            resultsContainer.style.display = 'block';
+            
+            // Display Correlation Matrix
+            displayCorrelationMatrix(analysis.symbols, analysis.correlationMatrix);
+            
+            // Display Hedge Suggestions
+            displayHedgeSuggestions(analysis.hedgeSuggestions);
+            
+            // Display Risk Warnings
+            displayRiskWarnings(analysis.riskWarnings);
+        }
+
+        // Display Correlation Matrix
+        function displayCorrelationMatrix(symbols, matrix) {
+            const container = document.getElementById('correlation-matrix');
+            
+            let html = '<table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">';
+            
+            // Header row
+            html += '<tr><th style="padding: 8px; border: 1px solid #E5E7EB; background: #F9FAFB;"></th>';
+            symbols.forEach(symbol => {
+                html += `<th style="padding: 8px; border: 1px solid #E5E7EB; background: #F9FAFB; font-weight: 600;">${symbol}</th>`;
+            });
+            html += '</tr>';
+            
+            // Data rows
+            symbols.forEach(symbolA => {
+                html += `<tr><td style="padding: 8px; border: 1px solid #E5E7EB; background: #F9FAFB; font-weight: 600;">${symbolA}</td>`;
+                symbols.forEach(symbolB => {
+                    const correlation = matrix[symbolA][symbolB];
+                    const color = getCorrelationColor(correlation);
+                    html += `<td style="padding: 8px; border: 1px solid #E5E7EB; text-align: center; background: ${color}; font-weight: 500;">${correlation.toFixed(2)}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            html += '<div style="margin-top: 10px; font-size: 0.75rem; color: #6B7280;">';
+            html += '<span style="display: inline-block; width: 12px; height: 12px; background: #FEE2E2; margin-right: 4px;"></span> High (&gt;0.7) ';
+            html += '<span style="display: inline-block; width: 12px; height: 12px; background: #FEF3C7; margin-right: 4px; margin-left: 10px;"></span> Moderate ';
+            html += '<span style="display: inline-block; width: 12px; height: 12px; background: #DBEAFE; margin-right: 4px; margin-left: 10px;"></span> Low ';
+            html += '<span style="display: inline-block; width: 12px; height: 12px; background: #D1FAE5; margin-right: 4px; margin-left: 10px;"></span> Negative (Hedge) ';
+            html += '</div>';
+            
+            container.innerHTML = html;
+        }
+
+        // Get color based on correlation value
+        function getCorrelationColor(correlation) {
+            if (correlation >= 0.7) return '#FEE2E2'; // Red - high correlation
+            if (correlation >= 0.3) return '#FEF3C7'; // Yellow - moderate
+            if (correlation >= -0.3) return '#DBEAFE'; // Blue - low
+            return '#D1FAE5'; // Green - negative (good for hedging)
+        }
+
+        // Display Hedge Suggestions
+        function displayHedgeSuggestions(suggestions) {
+            const container = document.getElementById('hedge-suggestions');
+            
+            if (!suggestions || suggestions.length === 0) {
+                container.innerHTML = '<p style="color: #6B7280; font-style: italic;">No hedging opportunities found. Try selecting stocks from different sectors.</p>';
+                return;
+            }
+            
+            let html = '';
+            suggestions.forEach(suggestion => {
+                const bgColor = suggestion.type === 'negative_correlation' ? '#D1FAE5' : '#DBEAFE';
+                const icon = suggestion.type === 'negative_correlation' ? '🛡️' : '📊';
+                
+                html += `
+                    <div style="background: ${bgColor}; padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <span style="font-size: 1.1rem;">${icon}</span>
+                                <strong>${suggestion.stockA}</strong> + <strong>${suggestion.stockB}</strong>
+                                <span style="color: #6B7280; font-size: 0.85rem; margin-left: 8px;">(r = ${suggestion.correlation})</span>
+                            </div>
+                            <button onclick="addHedgePairToOrders('${suggestion.stockA}', '${suggestion.stockB}')" 
+                                    style="background: #22C55E; color: white; border: none; border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 0.8rem;">
+                                + Add to Batch
+                            </button>
+                        </div>
+                        <p style="margin: 8px 0 0 0; font-size: 0.85rem; color: #374151;">${suggestion.suggestion}</p>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Display Risk Warnings
+        function displayRiskWarnings(warnings) {
+            const container = document.getElementById('risk-warnings');
+            
+            if (!warnings || warnings.length === 0) {
+                container.innerHTML = '<p style="color: #6B7280; font-style: italic;">No high-correlation risk detected.</p>';
+                return;
+            }
+            
+            let html = '';
+            warnings.forEach(warning => {
+                html += `
+                    <div style="background: white; padding: 10px; border-radius: 6px; margin-bottom: 8px; border-left: 3px solid #EF4444;">
+                        <strong>${warning.stockA}</strong> ↔ <strong>${warning.stockB}</strong>
+                        <span style="color: #DC2626; font-size: 0.85rem; margin-left: 8px;">(r = ${warning.correlation})</span>
+                        <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: #6B7280;">${warning.warning}</p>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+        }
+
+        // Add Hedge Pair to Batch Orders
+        function addHedgePairToOrders(stockA, stockB) {
+            // Switch to batch tab
+            const batchTab = document.querySelector('.tab-btn:nth-child(2)');
+            if (batchTab) {
+                document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                batchTab.classList.add('active');
+                document.getElementById('batch-tab').classList.add('active');
+            }
+            
+            // Add two orders for the hedge pair
+            addBatchOrderRowWithData('buy', stockA, 10);
+            addBatchOrderRowWithData('buy', stockB, 10);
+            
+            showMessage(`Added hedge pair: ${stockA} + ${stockB} to batch orders`, 'success');
+        }
+
+        // Add Batch Order Row with Data
+        function addBatchOrderRowWithData(action, symbol, quantity) {
+            batchOrderCount++;
+            const container = document.getElementById('batch-orders-list');
+            
+            const row = document.createElement('div');
+            row.className = 'batch-order-row';
+            row.id = `batch-row-${batchOrderCount}`;
+            row.innerHTML = `
+                <select id="batch-action-${batchOrderCount}" onchange="updateBatchRowStyle(${batchOrderCount})">
+                    <option value="buy" ${action === 'buy' ? 'selected' : ''}>Buy</option>
+                    <option value="sell" ${action === 'sell' ? 'selected' : ''}>Sell</option>
+                </select>
+                <select id="batch-symbol-${batchOrderCount}">
+                    <option value="">Select stock</option>
+                    ${allStocks.map(s => `<option value="${s}" ${s === symbol ? 'selected' : ''}>${s}</option>`).join('')}
+                </select>
+                <input type="number" id="batch-qty-${batchOrderCount}" placeholder="Qty" min="1" value="${quantity}">
+                <span class="action-type ${action}" id="batch-type-${batchOrderCount}">${action.toUpperCase()}</span>
+                <span style="cursor: pointer; color: #EF4444;" onclick="removeBatchOrderRow(${batchOrderCount})">🗑️</span>
+            `;
+            container.appendChild(row);
+        }
+
+        // ==================== End Hedge Analysis Functions ====================
+
+        // Display Stock Table with Checkboxes
+        function displayStockTable(stocks) {
+            const tbody = document.getElementById('stock-table-body');
+            
+            if (stocks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="2">No stocks found</td></tr>';
+                return;
+            }
+            
+            let html = '';
+            for (let i = 0; i < stocks.length; i += 2) {
+                html += '<tr>';
+                html += `<td><label><input type="checkbox" name="stock" value="${stocks[i]}" onchange="toggleStock('${stocks[i]}')" ${selectedStocks.has(stocks[i]) ? 'checked' : ''}>${stocks[i]}</label></td>`;
+                if (i + 1 < stocks.length) {
+                    html += `<td><label><input type="checkbox" name="stock" value="${stocks[i+1]}" onchange="toggleStock('${stocks[i+1]}')" ${selectedStocks.has(stocks[i+1]) ? 'checked' : ''}>${stocks[i+1]}</label></td>`;
+                } else {
+                    html += '<td></td>';
+                }
+                html += '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+
+        // Filter Stocks
+        function filterStocks() {
+            const searchTerm = document.getElementById('stock-search').value.toLowerCase();
+            const filtered = allStocks.filter(stock => stock.toLowerCase().includes(searchTerm));
+            displayStockTable(filtered);
+        }
+
+        // Toggle Stock Selection
+        function toggleStock(symbol) {
+            if (selectedStocks.has(symbol)) {
+                selectedStocks.delete(symbol);
+            } else {
+                selectedStocks.set(symbol, 1); // Default quantity
+            }
+            updateSelectedStocksDisplay();
+        }
+
+        // Update Selected Stocks Display
+        function updateSelectedStocksDisplay() {
+            const container = document.getElementById('selected-stocks-list');
+            const quantityContainer = document.getElementById('quantity-inputs');
+            
+            if (selectedStocks.size === 0) {
+                container.innerHTML = '<span style="color: #94A3B8; font-style: italic;">Select stocks from the list below</span>';
+                quantityContainer.innerHTML = '';
+                return;
+            }
+
+            // Display tags
+            let tagsHtml = '';
+            selectedStocks.forEach((qty, symbol) => {
+                tagsHtml += `
+                    <span class="selected-stock-tag">
+                        ${symbol}
+                        <span class="remove-btn" onclick="removeStock('${symbol}')">&times;</span>
+                    </span>
+                `;
+            });
+            container.innerHTML = tagsHtml;
+            
+            // Display quantity inputs
+            let inputsHtml = '<label style="display: block; margin-bottom: 8px; font-weight: 600; color: #334155;">Quantities:</label>';
+            selectedStocks.forEach((qty, symbol) => {
+                inputsHtml += `
+                    <div class="quantity-row">
+                        <span class="symbol">${symbol}</span>
+                        <input type="number" id="qty-${symbol}" value="${qty}" min="1" placeholder="Quantity" onchange="updateQuantity('${symbol}', this.value)">
+                        <span class="remove-btn" onclick="removeStock('${symbol}')">🗑️</span>
+                    </div>
+                `;
+            });
+            quantityContainer.innerHTML = inputsHtml;
+        }
+
+        // Remove Stock from Selection
+        function removeStock(symbol) {
+            selectedStocks.delete(symbol);
+            updateSelectedStocksDisplay();
+            // Update checkbox
+            const checkbox = document.querySelector(`input[value="${symbol}"]`);
+            if (checkbox) checkbox.checked = false;
+        }
+
+        // Update Quantity
+        function updateQuantity(symbol, value) {
+            const qty = parseInt(value) || 1;
+            selectedStocks.set(symbol, qty);
+        }
+
+        // Buy Multiple Stocks
+        async function buyMultipleStocks() {
+            if (selectedStocks.size === 0) {
+                showMessage('Please select at least one stock', 'error');
+                return;
+            }
+
+            const buyDate = document.getElementById('buy-date').value || null;
+            const orders = [];
+            
+            selectedStocks.forEach((qty, symbol) => {
+                const qtyInput = document.getElementById(`qty-${symbol}`);
+                const quantity = qtyInput ? parseInt(qtyInput.value) : qty;
+                if (quantity > 0) {
+                    orders.push({ symbol, quantity });
+                }
+            });
+
+            if (orders.length === 0) {
+                showMessage('Please enter valid quantities', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/batch-buy', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ orders, buyDate })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const successCount = result.results.filter(r => r.success).length;
+                    const failCount = result.results.filter(r => !r.success).length;
+                    
+                    let message = `Successfully bought ${successCount} stock(s)`;
+                    if (failCount > 0) {
+                        message += `, ${failCount} failed`;
+                    }
+                    showMessage(message, 'success');
+                    
+                    // Clear selections
+                    selectedStocks.clear();
+                    updateSelectedStocksDisplay();
+                    document.getElementById('buy-date').value = '';
+                    document.querySelectorAll('input[name="stock"]').forEach(cb => cb.checked = false);
+                    
+                    // Refresh portfolio
+                    setTimeout(loadPortfolio, 500);
+                } else {
+                    showMessage(result.error || 'Failed to process orders', 'error');
+                }
+            } catch (error) {
+                console.error('Error buying stocks:', error);
+                showMessage('Error processing orders: ' + error.message, 'error');
+            }
+        }
+
+        // Open Sell Modal
+        function openSellModal(symbol, quantity, currentPrice) {
+            currentSellStock = { symbol, quantity, currentPrice };
+            
+            document.getElementById('modal-stock-symbol').textContent = symbol;
+            document.getElementById('modal-available-qty').textContent = quantity;
+            document.getElementById('modal-current-price').textContent = formatCurrency(currentPrice);
+            document.getElementById('modal-sell-quantity').value = quantity;
+            document.getElementById('modal-sell-quantity').max = quantity;
+            
+            // Clear Flatpickr date picker
+            const dateInput = document.getElementById('modal-sell-date');
+            if (dateInput._flatpickr) {
+                dateInput._flatpickr.clear();
+            }
+            
+            updateSellPreview();
+            document.getElementById('sell-modal').classList.add('active');
+            
+            // Add event listener for quantity change
+            document.getElementById('modal-sell-quantity').addEventListener('input', updateSellPreview);
+        }
+
+        // Close Sell Modal
+        function closeSellModal() {
+            document.getElementById('sell-modal').classList.remove('active');
+            currentSellStock = null;
+        }
+
+        // Update Sell Preview
+        function updateSellPreview() {
+            if (!currentSellStock) return;
+            
+            const quantity = parseInt(document.getElementById('modal-sell-quantity').value) || 0;
+            const proceeds = quantity * currentSellStock.currentPrice;
+            document.getElementById('modal-estimated-proceeds').textContent = formatCurrency(proceeds);
+        }
+
+        // Confirm Sell
+        async function confirmSell() {
+            if (!currentSellStock) return;
+            
+            const quantity = parseInt(document.getElementById('modal-sell-quantity').value);
+            const sellDate = document.getElementById('modal-sell-date').value || null;
+            
+            if (!quantity || quantity <= 0) {
+                showMessage('Please enter a valid quantity', 'error');
+                return;
+            }
+            
+            if (quantity > currentSellStock.quantity) {
+                showMessage('Quantity exceeds available shares', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:3000/api/virtual-sell', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ 
+                        symbol: currentSellStock.symbol, 
+                        quantity, 
+                        sellDate 
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    const dateMsg = sellDate ? ` on ${formatDate(sellDate)}` : '';
+                    showMessage(
+                        `Successfully sold ${quantity} shares of ${currentSellStock.symbol} at ${formatCurrency(result.data.price)}${dateMsg}. Profit: ${formatCurrency(result.data.profit)}`, 
+                        'success'
+                    );
+                    closeSellModal();
+                    setTimeout(loadPortfolio, 500);
+                } else {
+                    showMessage(result.error || 'Failed to sell stock', 'error');
+                }
+            } catch (error) {
+                console.error('Error selling stock:', error);
+                showMessage('Error selling stock: ' + error.message, 'error');
+            }
+        }
+
+        // Batch Order Functions
+        function addBatchOrderRow() {
+            batchOrderCount++;
+            const container = document.getElementById('batch-orders-list');
+            
+            const row = document.createElement('div');
+            row.className = 'batch-order-row';
+            row.id = `batch-row-${batchOrderCount}`;
+            row.innerHTML = `
+                <select id="batch-action-${batchOrderCount}" onchange="updateBatchRowStyle(${batchOrderCount})">
+                    <option value="buy">Buy</option>
+                    <option value="sell">Sell</option>
+                </select>
+                <select id="batch-symbol-${batchOrderCount}">
+                    <option value="">Select stock</option>
+                    ${allStocks.map(s => `<option value="${s}">${s}</option>`).join('')}
+                </select>
+                <input type="number" id="batch-qty-${batchOrderCount}" placeholder="Qty" min="1">
+                <span class="action-type buy" id="batch-type-${batchOrderCount}">BUY</span>
+                <span style="cursor: pointer; color: #EF4444;" onclick="removeBatchOrderRow(${batchOrderCount})">🗑️</span>
+            `;
+            container.appendChild(row);
+        }
+
+        function updateBatchRowStyle(id) {
+            const action = document.getElementById(`batch-action-${id}`).value;
+            const typeSpan = document.getElementById(`batch-type-${id}`);
+            typeSpan.textContent = action.toUpperCase();
+            typeSpan.className = `action-type ${action}`;
+        }
+
+        function removeBatchOrderRow(id) {
+            const row = document.getElementById(`batch-row-${id}`);
+            if (row) row.remove();
+        }
+
+        async function executeBatchOrders() {
+            const rows = document.querySelectorAll('.batch-order-row');
+            const batchDate = document.getElementById('batch-date').value || null;
+            const buyOrders = [];
+            const sellOrders = [];
+            
+            rows.forEach(row => {
+                const id = row.id.replace('batch-row-', '');
+                const action = document.getElementById(`batch-action-${id}`)?.value;
+                const symbol = document.getElementById(`batch-symbol-${id}`)?.value;
+                const quantity = parseInt(document.getElementById(`batch-qty-${id}`)?.value);
+                
+                if (symbol && quantity > 0) {
+                    if (action === 'buy') {
+                        buyOrders.push({ symbol, quantity });
+                    } else {
+                        sellOrders.push({ symbol, quantity, sellDate: batchDate });
+                    }
+                }
+            });
+
+            if (buyOrders.length === 0 && sellOrders.length === 0) {
+                showMessage('No valid orders to execute', 'error');
+                return;
+            }
+
+            let successCount = 0;
+            let failCount = 0;
+
+            // Execute buy orders
+            if (buyOrders.length > 0) {
+                try {
+                    const response = await fetch('http://localhost:3000/api/batch-buy', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify({ orders: buyOrders, buyDate: batchDate })
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        successCount += result.results.filter(r => r.success).length;
+                        failCount += result.results.filter(r => !r.success).length;
+                    }
+                } catch (error) {
+                    console.error('Error executing buy orders:', error);
+                    failCount += buyOrders.length;
+                }
+            }
+
+            // Execute sell orders
+            for (const order of sellOrders) {
+                try {
+                    const response = await fetch('http://localhost:3000/api/virtual-sell', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include',
+                        body: JSON.stringify(order)
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        successCount++;
+                    } else {
+                        failCount++;
+                    }
+                } catch (error) {
+                    console.error('Error executing sell order:', error);
+                    failCount++;
+                }
+            }
+
+            showMessage(`Batch orders executed: ${successCount} successful, ${failCount} failed`, successCount > 0 ? 'success' : 'error');
+            
+            // Clear batch orders
+            document.getElementById('batch-orders-list').innerHTML = '';
+            document.getElementById('batch-date').value = '';
+            batchOrderCount = 0;
+            
+            setTimeout(loadPortfolio, 500);
+        }
+
+        // Load Portfolio
+        async function loadPortfolio() {
+            try {
+                const response = await fetch('http://localhost:3000/api/virtual-portfolio', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+
+                if (result.success) {
+                    portfolioData = result.portfolio;
+                    displayPortfolio(result.portfolio);
+                    // Also populate the stock selector for charts
+                    populateStockSelector();
+                } else {
+                    showMessage('Failed to load portfolio: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Error loading portfolio:', error);
+                displayEmptyPortfolio();
+            }
+        }
+        
+        // Populate Stock Selector Dropdown for Charts
+        function populateStockSelector() {
+            const select = document.getElementById('chart-stock-select');
+            
+            // Clear and rebuild options
+            select.innerHTML = '<option value="">Select Stock</option>';
+            
+            if (!portfolioData || !portfolioData.holdings || portfolioData.holdings.length === 0) {
+                 return;
+            }
+            
+            portfolioData.holdings.forEach(holding => {
+                select.innerHTML += `<option value="${holding.symbol}">${holding.symbol}</option>`;
+            });
+        }
+
+        // Display Empty Portfolio
+        function displayEmptyPortfolio() {
+            document.getElementById('portfolio-summary').innerHTML = `
+                <div class="summary-card">
+                    <h3>Virtual Balance</h3>
+                    <div class="value">${formatCurrency(100000)}</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Invested</h3>
+                    <div class="value">${formatCurrency(0)}</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total P/L</h3>
+                    <div class="value">${formatCurrency(0)}</div>
+                </div>
+            `;
+            document.getElementById('holdings-container').innerHTML = `
+                <div class="empty-state">
+                    <h3>No Holdings</h3>
+                    <p>Your portfolio is empty. Select stocks and buy to get started.</p>
+                </div>
+            `;
+            document.getElementById('winners-list').innerHTML = '<p style="color: #64748B;">No winners yet</p>';
+            document.getElementById('losers-list').innerHTML = '<p style="color: #64748B;">No losers yet</p>';
+        }
+
+        // Display Portfolio
+        function displayPortfolio(portfolio) {
+            // Display Summary
+            const plClass = portfolio.totalProfitLoss >= 0 ? 'positive' : 'negative';
+            document.getElementById('portfolio-summary').innerHTML = `
+                <div class="summary-card">
+                    <h3>Virtual Balance</h3>
+                    <div class="value">${formatCurrency(portfolio.virtualBalance)}</div>
+                </div>
+                <div class="summary-card">
+                    <h3>Total Invested</h3>
+                    <div class="value">${formatCurrency(portfolio.totalInvested)}</div>
+                </div>
+                <div class="summary-card ${plClass}">
+                    <h3>Total P/L</h3>
+                    <div class="value">${formatCurrency(portfolio.totalProfitLoss)}</div>
+                </div>
+                <div class="summary-card ${plClass}">
+                    <h3>P/L %</h3>
+                    <div class="value">${formatPercent(portfolio.totalProfitLossPercent)}</div>
+                </div>
+            `;
+
+            // Display Holdings
+            if (portfolio.holdings && portfolio.holdings.length > 0) {
+                let holdingsHtml = `
+                    <table class="holdings-table">
+                        <thead>
+                            <tr>
+                                <th>Symbol</th>
+                                <th>Qty</th>
+                                <th>Avg Price</th>
+                                <th>Current</th>
+                                <th>P/L</th>
+                                <th>P/L %</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                portfolio.holdings.forEach(holding => {
+                    const plClass = holding.profitLoss >= 0 ? 'profit' : 'loss';
+                    holdingsHtml += `
+                        <tr>
+                            <td><strong>${holding.symbol}</strong></td>
+                            <td>${holding.quantity}</td>
+                            <td>${formatCurrency(holding.avgBuyPrice)}</td>
+                            <td>${formatCurrency(holding.currentPrice)}</td>
+                            <td class="${plClass}">${formatCurrency(holding.profitLoss)}</td>
+                            <td class="${plClass}">${formatPercent(holding.profitLossPercent)}</td>
+                            <td>
+                                <button class="btn-sell" onclick="openSellModal('${holding.symbol}', ${holding.quantity}, ${holding.currentPrice})">
+                                    Sell
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                holdingsHtml += '</tbody></table>';
+                document.getElementById('holdings-container').innerHTML = holdingsHtml;
+            } else {
+                document.getElementById('holdings-container').innerHTML = `
+                    <div class="empty-state">
+                        <h3>No Holdings</h3>
+                        <p>Your portfolio is empty. Select stocks and buy to get started.</p>
+                    </div>
+                `;
+            }
+
+            // Display Winners
+            if (portfolio.winners && portfolio.winners.length > 0) {
+                let winnersHtml = '';
+                portfolio.winners.forEach(stock => {
+                    winnersHtml += `
+                        <div class="stock-item">
+                            <span>${stock.symbol}</span>
+                            <span class="profit">${formatPercent(stock.profitLossPercent)}</span>
+                        </div>
+                    `;
+                });
+                document.getElementById('winners-list').innerHTML = winnersHtml;
+            } else {
+                document.getElementById('winners-list').innerHTML = '<p style="color: #64748B;">No winners yet</p>';
+            }
+
+            // Display Losers
+            if (portfolio.losers && portfolio.losers.length > 0) {
+                let losersHtml = '';
+                portfolio.losers.forEach(stock => {
+                    losersHtml += `
+                        <div class="stock-item">
+                            <span>${stock.symbol}</span>
+                            <span class="loss">${formatPercent(stock.profitLossPercent)}</span>
+                        </div>
+                    `;
+                });
+                document.getElementById('losers-list').innerHTML = losersHtml;
+            } else {
+                document.getElementById('losers-list').innerHTML = '<p style="color: #64748B;">No losers yet</p>';
+            }
+        }
+        
+        // Handle Stock Selection Change
+        function changeStockChart() {
+            const symbol = document.getElementById('chart-stock-select').value;
+            if (symbol) {
+                fetchStockData(symbol);
+            }
+        }
+
+        // Show Portfolio Timeline
+        async function showPortfolioTimeline(e) {
+            // Update tabs UI
+            document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.remove('active'));
+            if (e && e.target) e.target.classList.add('active');
+            else document.querySelectorAll('.chart-tab')[0].classList.add('active');
+            
+            // Hide Stock Selector
+            document.getElementById('chart-stock-select').style.display = 'none';
+            
+            const chartPlaceholder = document.getElementById('chart-placeholder');
+            chartPlaceholder.innerHTML = '<p>Loading timeline...</p>';
+            chartPlaceholder.style.display = 'flex';
+            document.getElementById('price-chart').style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/portfolio-timeline', {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+
+                if (result.success && result.timeline && result.timeline.length > 0) {
+                    // [修改]: 直接显示图表，不进行过滤
+                    currentChartLabel = 'Portfolio Value';
+                    displayTimelineChart(result.timeline, currentChartLabel);
+                } else {
+                    chartPlaceholder.innerHTML = '<p>Buy some stocks to see the price timeline</p>';
+                }
+            } catch (error) {
+                console.error('Error loading timeline:', error);
+                chartPlaceholder.innerHTML = '<p>Error loading timeline</p>';
+            }
+        }
+
+        // Show Stock Timeline (Toggle Tab & Show Dropdown)
+        async function showStockTimeline(e) {
+            document.querySelectorAll('.chart-tab').forEach(tab => tab.classList.remove('active'));
+            if (e && e.target) e.target.classList.add('active');
+            
+            // Show Stock Selector and force display
+            const stockSelect = document.getElementById('chart-stock-select');
+            stockSelect.style.display = 'block';
+            
+            // Ensure selector is populated (in case loadPortfolio finished before user clicked)
+            populateStockSelector();
+            
+            // Auto-select first stock if none selected
+            if (stockSelect.value === "" && stockSelect.options.length > 1) {
+                stockSelect.selectedIndex = 1;
+            }
+            
+            const selectedSymbol = stockSelect.value;
+            
+            if (!selectedSymbol) {
+                document.getElementById('chart-placeholder').innerHTML = '<p>No holdings available to display</p>';
+                document.getElementById('chart-placeholder').style.display = 'flex';
+                document.getElementById('price-chart').style.display = 'none';
+                return;
+            }
+            
+            // Fetch data for the currently selected stock
+            fetchStockData(selectedSymbol);
+        }
+        
+        // Helper to fetch single stock data
+        async function fetchStockData(symbol) {
+            const chartPlaceholder = document.getElementById('chart-placeholder');
+            chartPlaceholder.innerHTML = `<p>Loading data for ${symbol}...</p>`;
+            chartPlaceholder.style.display = 'flex';
+            document.getElementById('price-chart').style.display = 'none';
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/price-timeline/${symbol}`, {
+                    credentials: 'include'
+                });
+                
+                const result = await response.json();
+
+                if (result.success && result.timeline && result.timeline.length > 0) {
+                    // [修改]: 直接显示图表，不进行过滤，保留数据映射逻辑
+                    const chartData = result.timeline.map(item => ({
+                        date: item.date,
+                        totalValue: item.price
+                    }));
+                    currentChartLabel = `${symbol} Price`;
+                    displayTimelineChart(chartData, currentChartLabel);
+                } else {
+                    chartPlaceholder.innerHTML = '<p>No data available</p>';
+                    chartPlaceholder.style.display = 'flex';
+                }
+            } catch (error) {
+                console.error('Error loading stock timeline:', error);
+                chartPlaceholder.innerHTML = '<p>Error loading data</p>';
+            }
+        }
+
+        // Display Timeline Chart
+        function displayTimelineChart(data, label) {
+            const ctx = document.getElementById('price-chart').getContext('2d');
+            const chartPlaceholder = document.getElementById('chart-placeholder');
+            
+            if (data.length === 0) {
+                chartPlaceholder.innerHTML = '<p>No data in this time range</p>';
+                chartPlaceholder.style.display = 'flex';
+                document.getElementById('price-chart').style.display = 'none';
+                return;
+            }
+
+            if (currentChart) {
+                currentChart.destroy();
+            }
+
+            const dates = data.map(item => {
+                const dateStr = String(item.date);
+                return `${dateStr.slice(0, 4)}-${dateStr.slice(4, 6)}-${dateStr.slice(6, 8)}`;
+            });
+            const values = data.map(item => item.totalValue);
+
+            chartPlaceholder.style.display = 'none';
+            document.getElementById('price-chart').style.display = 'block';
+
+            currentChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: label,
+                        data: values,
+                        borderColor: '#0066CC',
+                        backgroundColor: 'rgba(0, 102, 204, 0.1)',
+                        borderWidth: 2,
+                        pointRadius: data.length > 60 ? 0 : 3, // Hide points if too many data points
+                        pointHoverRadius: 4,
+                        fill: true,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Date' },
+                            ticks: { 
+                                maxTicksLimit: 8,
+                                maxRotation: 0 
+                            }
+                        },
+                        y: {
+                            title: { display: true, text: 'Value ($)' },
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toLocaleString();
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // --- AI Portfolio Analysis ---
+        async function getPortfolioAnalysis() {
+            const btn = document.getElementById('ai-rebalance-btn');
+            const container = document.getElementById('ai-advice-content');
+            const textP = document.getElementById('ai-analysis-text');
+            const tbody = document.getElementById('ai-recommendations-body');
+            
+            btn.disabled = true;
+            btn.innerHTML = '🤖 Analyzing... (This may take a few seconds)';
+            container.style.display = 'none';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/virtual-portfolio-analysis', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    container.style.display = 'block';
+                    
+                    // Display Analysis Text
+                    textP.textContent = result.aiAnalysis;
+                    
+                    // Display Recommendations Table
+                    let tableHtml = '';
+                    result.recommendations.forEach(item => {
+                        let actionClass = 'action-hold';
+                        if (item.suggestion === 'Buy') actionClass = 'action-buy';
+                        if (item.suggestion === 'Sell') actionClass = 'action-sell';
+                        
+                        tableHtml += `
+                            <tr>
+                                <td><strong>${item.symbol}</strong></td>
+                                <td>${item.currentWeight}</td>
+                                <td>${item.suggestedWeight}</td>
+                                <td class="${actionClass}">${item.suggestion} ${item.suggestion !== 'Hold' ? `($${item.suggestedActionValue})` : ''}</td>
+                            </tr>
+                        `;
+                    });
+                    tbody.innerHTML = tableHtml;
+                    
+                    // Scroll to results
+                    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    
+                } else {
+                    alert(result.message || "Analysis failed.");
+                }
+            } catch (error) {
+                console.error("Error getting portfolio analysis:", error);
+                alert("Failed to connect to analysis server.");
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🤖 Analyze & Optimize Portfolio';
+            }
+        }
+
+        // Page Load
+        window.onload = function() {
+            // Load navbar
+            fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+                    document.getElementById('navbar-container').innerHTML = data;
+                })
+                .catch(error => console.error('Error loading navbar:', error));
+            
+            // Initialize Flatpickr for all date inputs (English format)
+            flatpickr("#buy-date", {
+                dateFormat: "Y-m-d",
+                locale: "en",
+                allowInput: true,
+                placeholder: "YYYY-MM-DD"
+            });
+            
+            flatpickr("#batch-date", {
+                dateFormat: "Y-m-d",
+                locale: "en",
+                allowInput: true,
+                placeholder: "YYYY-MM-DD"
+            });
+            
+            flatpickr("#modal-sell-date", {
+                dateFormat: "Y-m-d",
+                locale: "en",
+                allowInput: true,
+                placeholder: "YYYY-MM-DD"
+            });
+            
+            flatpickr("#batch-sell-date", {
+                dateFormat: "Y-m-d",
+                locale: "en",
+                allowInput: true,
+                placeholder: "YYYY-MM-DD"
+            });
+            
+            // Load stock list
+            loadStockList();
+            
+            // Load portfolio
+            loadPortfolio();
+            
+            // Add initial batch order row
+            addBatchOrderRow();
+            
+            // Refresh every 30 seconds
+            setInterval(loadPortfolio, 30000);
+        };
+    </script>
+</body>
+</html>

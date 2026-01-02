@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+    
+    <style>
+        /* 全局样式 */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #F7F9FC; /* 淡蓝色背景 */
+            min-height: 100vh;
+            padding: 20px;
+            color: #1E293B;
+            padding-top: 110px; /* 为固定的 navbar 留出空间 */
+        }
+        h1, h2, h3, h4, h5 { color: #1E293B; }
+        h1 { font-size: 2rem; margin-bottom: 20px; text-align: center; }
+        h2 { font-size: 1.5rem; margin-bottom: 15px; }
+        
+        /* 玻璃卡片样式 */
+        .card-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
+
+        /* 顶部标签页按钮 */
+        .tab-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            width: 100%;
+        }
+        .tab-btn {
+            padding: 12px 20px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            background-color: #FFFFFF;
+            color: #475569;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex-grow: 1;
+            text-align: center;
+            font-size: 1rem;
+        }
+        .tab-btn:hover {
+            border-color: #0066CC;
+            color: #0066CC;
+        }
+        .tab-btn.active {
+            background-color: #0066CC;
+            color: white;
+            border-color: #0066CC;
+            box-shadow: 0 4px 12px rgba(0, 102, 204, 0.2);
+        }
+        
+        /* 表单输入组 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #334155;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #CBD5E1;
+            border-radius: 8px;
+            background-color: #F8FAFC;
+            font-size: 1rem;
+            color: #1E293B;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #0066CC;
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.1);
+        }
+
+        /* 统一的按钮样式 */
+        .action-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 10px;
+        }
+        .action-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-primary { background: #0066CC; color: white; }
+        .btn-primary:hover { background: #004499; }
+        
+        .btn-green { background: #10B981; color: white; }
+        .btn-green:hover { background: #059669; }
+        
+        .btn-red { background: #E11D48; color: white; }
+        .btn-red:hover { background: #BE123C; }
+
+        /* 主布局 */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        /* 余额显示 */
+        .balance-info {
+            background: #F8FAFC;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid #E2E8F0;
+        }
+        .balance-info h3 { margin: 0; color: #334155; }
+        #current-balance {
+            color: #0066CC;
+            font-weight: 700;
+            font-size: 1.2em;
+        }
+
+        /* 消息提示 */
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: 500;
+            display: none; /* 默认隐藏 */
+        }
+        .message.error { background: #FEE2E2; color: #B91C1C; display: block; }
+        .message.success { background: #D1FAE5; color: #047857; display: block; }
+
+        /* 表格样式 */
+        .table-container {
+            margin: 20px 0;
+            overflow-x: auto;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+        }
+        #active-stocks-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            overflow: hidden;
+            border-radius: 8px;
+        }
+        #active-stocks-table thead {
+            background-color: #F8FAFC;
+        }
+        #active-stocks-table th,
+        #active-stocks-table td {
+            padding: 14px 18px;
+            text-align: left;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        #active-stocks-table th {
+            color: #334155;
+            font-weight: 600;
+        }
+        #active-stocks-table tbody tr:hover {
+            background-color: #F8FAFC;
+        }
+        #active-stocks-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* 卖出按钮 */
+        .sell-btn {
+            background-color: #E11D48;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 600;
+        }
+        .sell-btn:hover {
+            background-color: #BE123C;
+        }
+    </style>
+</head>
+<body>
+<div id="navbar-container"></div>
+
+<div class="main-container">
+    <h1>User Information & Actions</h1>
+    
+    <div class="tab-bar">
+        <button id="tab-sell" class="tab-btn active">Sell Stock</button>
+        <button id="tab-password" class="tab-btn">Change Password</button>
+        <button id="tab-deposit" class="tab-btn">Deposit Amount</button>
+        <button id="tab-ai-agent" class="tab-btn" onclick="window.open('http://localhost:5001/', '_blank')">Launch AI Agent</button>
+    </div>
+
+    <div id="password-section" style="display:none;" class="card-panel">
+        <h2>Change Password</h2>
+        <form id="change-password-form">
+            <div class="form-group">
+                <label for="oldPassword">Old Password:</label>
+                <input type="password" id="oldPassword" placeholder="Enter your old password" required>
+            </div>
+            <div class="form-group">
+                <label for="newPassword">New Password:</label>
+                <input type="password" id="newPassword" placeholder="Enter your new password" required>
+            </div>
+            <button type="submit" class="action-button btn-primary">Change Password</button>
+        </form>
+        <div class="message" id="change-password-message"></div>
+    </div>
+
+    <div id="deposit-section" style="display:none;" class="card-panel">
+        <h2>Deposit Amount</h2>
+        <div class="balance-info">
+            <h3>Current Balance: <span id="current-balance">Loading...</span></h3>
+        </div>
+        <form id="deposit-form">
+            <div class="form-group">
+                <label for="amount">Amount:</label>
+                <input type="number" id="amount" placeholder="Enter amount to deposit" min="1" required>
+            </div>
+            <button type="submit" class="action-button btn-green">Deposit</button>
+        </form>
+        <div class="message" id="deposit-message"></div>
+    </div>
+
+    <div id="sell-section" class="card-panel">
+        <h2>Sell Stock (Your Active Holdings)</h2>
+        <div id="active-stocks-message" class="message"></div>
+        <div class="table-container">
+            <table id="active-stocks-table" style="display:none;">
+                <thead>
+                    <tr>
+                        <th>Timestamp</th>
+                        <th>Stock Name</th>
+                        <th>Quantity</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    // --- 这是您原始的 JavaScript 逻辑 ---
+
+    document.getElementById('change-password-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const oldPassword = document.getElementById('oldPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const messageEl = document.getElementById('change-password-message');
+        messageEl.style.display = 'none'; // 隐藏旧消息
+
+        try {
+            const response = await fetch('http://localhost:3000/api/change-password', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ oldPassword, newPassword }),
+                credentials: 'include',
+            });
+            const result = await response.json();
+            if (result.success) {
+                messageEl.textContent = result.message;
+                messageEl.className = 'message success';
+                alert("changing password successful")
+            } else {
+                messageEl.textContent = result.message;
+                messageEl.className = 'message error';
+            }
+        } catch (error) {
+            console.error('Error changing password:', error);
+            messageEl.textContent = 'Error changing password. Please try again later.';
+            messageEl.className = 'message error';
+        }
+    });
+
+    async function fetchUserBalance() {
+        try {
+            console.log('Fetching user balance...');
+            const response = await fetch('http://localhost:3000/api/user-balance', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            });
+            console.log('Response status:', response.status);
+            const data = await response.json();
+            console.log('Response data:', data);
+            
+            if (data.success) {
+                const balance = parseFloat(data.balance);
+                if (isNaN(balance)) {
+                    console.error('Invalid balance value:', data.balance);
+                    document.getElementById('current-balance').textContent = 'Error: Invalid balance value';
+                    return;
+                }
+                document.getElementById('current-balance').textContent = `$${balance.toFixed(2)}`;
+            } else {
+                console.error('Error in response:', data.message);
+                document.getElementById('current-balance').textContent = `Error: ${data.message || 'Unknown error'}`;
+            }
+        } catch (error) {
+            console.error('Error fetching balance:', error);
+            document.getElementById('current-balance').textContent = `Error: ${error.message}`;
+        }
+    }
+
+    document.getElementById('deposit-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById('amount').value);
+        const messageEl = document.getElementById('deposit-message');
+        messageEl.style.display = 'none';
+
+        try {
+            const response = await fetch('http://localhost:3000/api/deposit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount }),
+                credentials: 'include',
+            });
+            const result = await response.json();
+            if (result.success) {
+                messageEl.textContent = result.message;
+                messageEl.className = 'message success';
+                alert("deposit successful");
+                fetchUserBalance();
+                document.getElementById('amount').value = '';
+            } else {
+                messageEl.textContent = result.message;
+                messageEl.className = 'message error';
+            }
+        } catch (error) {
+            console.error('Error processing deposit:', error);
+            messageEl.textContent = 'Error processing deposit. Please try again later.';
+            messageEl.className = 'message error';
+        }
+    });
+
+    // --- 关键修改：回滚到旧的、能工作的逻辑 ---
+    document.addEventListener('DOMContentLoaded', async () => {
+        const messageEl = document.getElementById('active-stocks-message');
+        const tableEl = document.getElementById('active-stocks-table');
+        const tbodyEl = tableEl.querySelector('tbody');
+        messageEl.className = 'message'; // 重置
+        messageEl.textContent = 'Loading your active stocks...';
+        messageEl.style.display = 'block';
+
+        try {
+            const response = await fetch('http://localhost:3000/api/active-stocks', {
+                method: 'GET',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+            });
+
+            const result = await response.json();
+
+            // 这是您原来的逻辑：只检查 response.ok
+            if (response.ok) {
+                messageEl.textContent = result.message;
+                messageEl.classList.add('success'); // 假设成功
+                messageEl.classList.remove('error');
+
+                // 填充股票数据
+                if (result.data && result.data.length > 0) {
+                    tbodyEl.innerHTML = ''; // 清空
+                    result.data.forEach(stock => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${stock.timestamp}</td>
+                            <td>${stock.stock_name}</td>
+                            <td>${stock.number}</td>
+                            <td>
+                                <button class="sell-btn" onclick="sellStock('${stock.timestamp}', ${stock.number})">
+                                    Sell
+                                </button>
+                            </td>
+                        `;
+                        tbodyEl.appendChild(row);
+                    });
+                    tableEl.style.display = 'table';
+                } else {
+                    messageEl.textContent = 'You have no active stocks to sell.';
+                    tableEl.style.display = 'none';
+                }
+            } else {
+                // 这是原来的错误处理
+                messageEl.textContent = result.message || 'Failed to load active stocks';
+                messageEl.classList.add('error');
+                messageEl.classList.remove('success');
+            }
+        } catch (error) {
+            console.error('Error fetching active stocks:', error);
+            messageEl.textContent = 'Error fetching active stocks. Please try again later.';
+            messageEl.classList.add('error');
+            messageEl.classList.remove('success');
+        }
+    });
+    // --- 逻辑回滚结束 ---
+
+    function sellStock(timestamp, maxQuantity) {
+        const sellQuantity = prompt(`Enter quantity to sell (max: ${maxQuantity}):`);
+        if (sellQuantity === null) return;
+        
+        const quantity = parseInt(sellQuantity);
+        if (isNaN(quantity) || quantity <= 0 || quantity > maxQuantity) {
+            alert('Please enter a valid quantity');
+            return;
+        }
+
+        fetch('http://localhost:3000/api/sell-stock', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ timestamp, sellQuantity: quantity }),
+            credentials: 'include',
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.message) {
+                alert(`Success: ${data.message}. Sold for ${data.sellAmount.toFixed(2)} with real-time price ${data.realTimePrice.toFixed(2)}. Remaining: ${data.remainingQuantity}.`);
+                location.reload();
+            } else {
+                alert(`Error: ${data.error || 'Unknown error'}`);
+            }
+        })
+        .catch(error => {
+            alert('Error: Failed to connect to the server.');
+        });
+    }
+
+    // tab切换逻辑
+    const tabPassword = document.getElementById('tab-password');
+    const tabDeposit = document.getElementById('tab-deposit');
+    const tabSell = document.getElementById('tab-sell');
+    const passwordSection = document.getElementById('password-section');
+    const depositSection = document.getElementById('deposit-section');
+    const sellSection = document.getElementById('sell-section');
+
+    function setActiveTab(activeTab) {
+        [tabPassword, tabDeposit, tabSell].forEach(tab => {
+            tab.classList.remove('active');
+        });
+        activeTab.classList.add('active');
+
+        passwordSection.style.display = 'none';
+        depositSection.style.display = 'none';
+        sellSection.style.display = 'none';
+    }
+
+    tabPassword.onclick = function() {
+        setActiveTab(tabPassword);
+        passwordSection.style.display = 'block';
+    };
+    
+    tabDeposit.onclick = function() {
+        setActiveTab(tabDeposit);
+        depositSection.style.display = 'block';
+        fetchUserBalance();
+    };
+    
+    tabSell.onclick = function() {
+        setActiveTab(tabSell);
+        sellSection.style.display = 'block';
+    };
+    
+    // 页面加载
+    window.onload = function() {
+        fetch('navbar.html')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('navbar-container').innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error loading navbar:', error);
+            });
+
+        // 默认显示 Sell Stock 模块
+        setActiveTab(tabSell);
+        sellSection.style.display = 'block';
+    };
+</script>
+</body>
+</html>
