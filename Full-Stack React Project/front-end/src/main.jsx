@@ -6,7 +6,7 @@ import './index.css'
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC-uvLOwJg2CbihwbyluXZyiayUFZctu4k",
+  apiKey: "YOUR_GEMINI_API_KEY_HERE",
   authDomain: "full-stack-react-600c0.firebaseapp.com",
   projectId: "full-stack-react-600c0",
   storageBucket: "full-stack-react-600c0.firebasestorage.app",
