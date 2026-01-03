@@ -17,10 +17,10 @@ A professional full-stack application that integrates real-time market analysis 
 
 #### **Evaluation of Tech Companies' Success**
 A comprehensive data science study analyzing the valuation drivers of S&P 500 technology firms.
-* [cite_start]**Data Processing**: Performed extensive data cleaning and feature engineering using **Pandas** and **NumPy** to prepare financial datasets for analysis[cite: 28, 160].
-* [cite_start]**Modeling & Analysis**: Built linear and polynomial regression models using **scikit-learn** to identify the primary drivers of market success[cite: 15, 92].
-* [cite_start]**Advanced Visualization**: Utilized **Matplotlib** to create complex bubble charts and efficiency paradox models[cite: 30, 106, 140].
-* [cite_start]**Key Insight**: Discovered that financial success in the tech sector is primarily driven by **investor sentiment (PE Ratio)** rather than company size (Market Cap)[cite: 149].
+* **Data Processing**: Performed extensive data cleaning and feature engineering using **Pandas** and **NumPy** to prepare financial datasets for analysis.
+* **Modeling & Analysis**: Built linear and polynomial regression models using **scikit-learn** to identify the primary drivers of market success.
+* **Advanced Visualization**: Utilized **Matplotlib** to create complex bubble charts and efficiency paradox models.
+* **Key Insight**: Discovered that financial success in the tech sector is primarily driven by **investor sentiment (PE Ratio)** rather than company size (Market Cap).
 
 ---
 
