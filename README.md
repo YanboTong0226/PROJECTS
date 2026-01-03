@@ -16,26 +16,40 @@ A professional full-stack application that integrates real-time market analysis 
 * **Security**: Uses **bcrypt** for secure authentication.
 
 #### **Evaluation of Tech Companies' Success**
-A data science study using **Python** to analyze valuation drivers of S&P 500 tech firms.
-* **Modeling**: Built regression models using **scikit-learn**.
-* **Visualization**: Generated complex bubble and trend charts with **Matplotlib**.
+A comprehensive data science study analyzing the valuation drivers of S&P 500 technology firms.
+* [cite_start]**Data Processing**: Performed extensive data cleaning and feature engineering using **Pandas** and **NumPy** to prepare financial datasets for analysis[cite: 28, 160].
+* [cite_start]**Modeling & Analysis**: Built linear and polynomial regression models using **scikit-learn** to identify the primary drivers of market success[cite: 15, 92].
+* [cite_start]**Advanced Visualization**: Utilized **Matplotlib** to create complex bubble charts and efficiency paradox models[cite: 30, 106, 140].
+* [cite_start]**Key Insight**: Discovered that financial success in the tech sector is primarily driven by **investor sentiment (PE Ratio)** rather than company size (Market Cap)[cite: 149].
 
 ---
 
 ### 💻 Technical Ecosystem
 
-* **Engineering**: **Python**, **Java**, **C++**, and **JavaScript** (React, Express, NodeJS).
-* **Data Science**: **scikit-learn**, **Matplotlib**, **NumPy**, **Pandas**, **PyTorch**, and **TensorFlow**.
+* **Software Engineering**: Full-stack development using **Python**, **Java**, **C++**, and **JavaScript** (React, Express, and NodeJS).
+* **Data Science & ML**: Advanced analysis and modeling with **Python** (**Pandas**, **NumPy**, **scikit-learn**, **Matplotlib**, PyTorch, TensorFlow) and **MySQL**.
+* **Web Programming**: Front-end design utilizing **JavaScript**, **HTML**, and **CSS**.
+* **Specialized Topics**: Information organization, metadata, data provenance, and the **Transformer** architecture.
+
+---
+
+### 🎓 Academic & Professional Interests
+
+I am currently seeking **Software Engineer, Data Scientist, or Quantitative Analyst** internships and new graduate roles for 2026. My work is driven by:
+* **AI Agents**: Developing context-aware agents through advanced **Prompt Engineering**.
+* **Data Integrity**: Applying principles of data cleaning and provenance to real-world datasets.
+* **Information Science**: Researching metadata classification and the organization of complex information systems.
 
 ---
 
 ### 🌍 Beyond the Code
-* ⚽ **Manchester United** fan.
-* 🎮 **League of Legends** player.
-* 🎤 **Mayday (五月天)** listener.
-* ✈️ **Traveling** and cultural exploration.
+When I'm not developing or analyzing data, I enjoy:
+* ⚽ Cheering for **Manchester United**.
+* 🎮 Playing **League of Legends**.
+* 🎤 Listening to **Mayday (五月天)**.
+* ✈️ **Traveling** and exploring new cultures.
 
 ---
 
 ### 📫 Connect with Me
-Please explore my repositories or reach out for professional opportunities!
+Please feel free to explore my repositories. I am always open to discussing new projects or professional opportunities!
