@@ -2,7 +2,7 @@
 
 I am a **Master of Information (Data Science Concentration)** student at **Rutgers University**, set to graduate in **May 2026**. I am a software engineer and data scientist focused on building intelligent, AI-driven applications and extracting meaningful insights from complex financial datasets.
 
-![github contribution grid snake animation](https://raw.githubusercontent.com/YanboTong0226/YanboTong0226/output/github-contribution-grid-snake.svg)
+![github contribution grid snake animation](https://raw.githubusercontent.com/YanboTong0226/PROJECTS/output/github-contribution-grid-snake-dark.svg)
 
 ---
 
@@ -39,8 +39,3 @@ A data science study using **Python** to analyze valuation drivers of S&P 500 te
 
 ### 📫 Connect with Me
 Please explore my repositories or reach out for professional opportunities!
-
----
-
-### 📫 Connect with Me
-Please feel free to explore my repositories. I am always open to discussing new projects or professional opportunities!
