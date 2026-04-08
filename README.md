@@ -2,9 +2,9 @@ Welcome to Yanbo's GitHub Data Science Page.
 
 This is the sub-page containing my exciting data science projects using:
 
-- Python (NumPy, Pandas, PyTorch, TensorFlow, etc.), 
+- Python (NumPy, Pandas, Scikit-Learn, PyTorch, Matplotlib, etc.), 
                               
-- R language (Regression, data visualization, data analysis, etc.),
+- R language (Regression, data cleaning, data visualization, data analysis, etc.),
 
 - Database Management including MySQL, NoSQL, and MongoDB,
 
